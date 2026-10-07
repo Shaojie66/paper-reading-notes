@@ -1,0 +1,110 @@
+<html style="margin:0;padding:0;">
+<title>深度学习综述·论文结构导览（Deep Learning, Nature 2015）</title>
+<div style="width:100%;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:#f7f8fa;color:#1f2937;padding:20px 16px;">
+<style>
+  .sec{background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:14px;box-sizing:border-box;}
+  .sec-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .sec-title .tag{font-size:12px;font-weight:600;color:#ffffff;background:#3b82f6;border-radius:4px;padding:1px 6px;}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+  .node{background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:8px 10px;font-size:14px;text-align:center;box-sizing:border-box;}
+  .node.gray{background:#f3f4f6;border-color:#9ca3af;}
+  .arrow{font-size:18px;color:#3b82f6;font-weight:700;}
+  .pills{display:flex;flex-wrap:wrap;gap:6px;}
+  .pill{font-size:13px;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:999px;padding:3px 10px;}
+  .cards{display:flex;flex-wrap:wrap;gap:12px;}
+  .card{flex:1 1 300px;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-sizing:border-box;background:#fafbff;}
+  .card h4{margin:0 0 8px;font-size:15px;}
+  .card.cnn h4{color:#2563eb;} .card.rnn h4{color:#7c3aed;}
+  .card ul{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.7;}
+  .loop{display:flex;flex-wrap:wrap;align-items:center;gap:6px;background:#fefce8;border:1.5px dashed #ca8a04;border-radius:10px;padding:10px 12px;}
+  .loop .node{background:#fffbeb;border-color:#ca8a04;font-size:13.5px;}
+  .footer-line{font-size:13.5px;color:#374151;line-height:1.75;}
+  .hint{font-size:12.5px;color:#6b7280;margin-top:8px;}
+</style>
+
+<div class="sec">
+  <div class="sec-title">📄 本期论文 · Deep learning（Nature 521:436–444, 2015）<span class="tag">综述·基础篇</span></div>
+  <div style="font-size:14px;line-height:1.8;">
+    LeCun（卷积网络）· Bengio（表示学习）· Hinton（反向传播/预训练）合著，被引 8.5 万+。<br>
+    一句话主线：<b>用多个简单非线性模块逐层堆叠，让机器从原始数据自动学出多层级抽象表征</b>，替代人工设计特征。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">🧭 主线：从原始数据到高层抽象（特征层次自动学习）</div>
+  <div class="flow">
+    <div class="node">原始数据<br><span style="font-size:12px;color:#6b7280;">像素 / 声音波形 / 文本</span></div>
+    <span class="arrow">→</span>
+    <div class="node">第 1 层<br><span style="font-size:12px;color:#6b7280;">边缘·局部特征</span></div>
+    <span class="arrow">→</span>
+    <div class="node">第 2 层<br><span style="font-size:12px;color:#6b7280;">局部特征组合</span></div>
+    <span class="arrow">→</span>
+    <div class="node">⋯<br><span style="font-size:12px;color:#6b7280;">深度 5–20 层</span></div>
+    <span class="arrow">→</span>
+    <div class="node">第 N 层<br><span style="font-size:12px;color:#6b7280;">部件 → 对象 / 类别</span></div>
+    <span class="arrow">→</span>
+    <div class="node gray">输出<br><span style="font-size:12px;color:#6b7280;">各类别得分</span></div>
+  </div>
+  <div class="hint">每层 = 简单非线性模块（加权求和 + 非线性函数），层间特征<b>由数据学习</b>，而非人工设计 —— 这是深度学习的核心优势。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">🏗️ 两大架构支柱</div>
+  <div class="cards">
+    <div class="card cnn">
+      <h4>① CNN 卷积网络 —— 处理阵列/图像数据</h4>
+      <ul>
+        <li><b>局部连接</b>：单元只连上一层局部区域（对应自然信号的局部相关性）</li>
+        <li><b>权值共享</b>：同一滤波器在整张特征图上滑动，检测同类模式</li>
+        <li><b>池化</b>：粗化位置，产生对小位移/形变的不变性</li>
+        <li><b>多层堆叠</b>：卷积+ReLU+池化反复，构成特征层级</li>
+      </ul>
+      <div style="margin-top:6px;" class="pills"><span class="pill">受视觉皮层启发</span><span class="pill">2012 ImageNet 错误率几乎减半</span></div>
+    </div>
+    <div class="card rnn">
+      <h4>② RNN 循环网络 —— 处理序列/文本数据</h4>
+      <ul>
+        <li><b>状态向量</b>：逐步读取序列，隐式记住全部历史</li>
+        <li><b>按时间展开</b>：可视为各层共享权重的深层网络，用同一反向传播训练</li>
+        <li><b>LSTM 记忆单元</b>：门控自连接，缓解梯度爆炸/消失</li>
+        <li><b>encoder–decoder</b>：编码器→"思想向量"→解码器，用于机器翻译、图像描述</li>
+      </ul>
+      <div style="margin-top:6px;" class="pills"><span class="pill">加显式记忆：神经图灵机 / 记忆网络</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">🔄 训练闭环：反向传播 + 随机梯度下降（SGD）</div>
+  <div class="loop">
+    <div class="node">前向计算<br><span style="font-size:12px;color:#6b7280;">输入 → 输出得分</span></div>
+    <span class="arrow">→</span>
+    <div class="node">计算误差<br><span style="font-size:12px;color:#6b7280;">目标函数（高维"丘陵"）</span></div>
+    <span class="arrow">→</span>
+    <div class="node">反向传播<br><span style="font-size:12px;color:#6b7280;">链式法则求梯度</span></div>
+    <span class="arrow">→</span>
+    <div class="node">更新权重<br><span style="font-size:12px;color:#6b7280;">沿负梯度下降</span></div>
+    <span class="arrow">↺</span>
+    <div class="node gray">重复<br><span style="font-size:12px;color:#6b7280;">直到目标函数不再下降</span></div>
+  </div>
+  <div class="hint">关键工程配方：GPU 加速 · ReLU 激活 · dropout 正则化 · 数据增强（变形已有样本）。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">📊 效果与边界</div>
+  <div class="footer-line">
+    <b style="color:#2563eb;">效果</b>：语音识别首个大型工业落地（2012 年进 Android）· ImageNet 2012 错误率几乎减半 · 机器翻译迅速追平最先进方法 · 药物活性 / 粒子数据 / 脑回路 / 基因突变预测 · CNN+RNN 图像描述 · 1990s 后期支票读取覆盖全美 10%+。<br>
+    <b style="color:#b45309;">局限</b>：RNN 长程依赖仍难学（梯度消失/爆炸）· 无监督学习被监督掩盖、长远更重要 · 与符号推理/复杂推理结合仍是开放问题 · 2015 快照，不含 Transformer 与后来的大模型。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">📚 推荐阅读路线（由浅入深）</div>
+  <div class="pills">
+    <span class="pill">本篇综述（本期）</span><span class="pill">→ AlexNet (2012)</span><span class="pill">→ VGG / ResNet</span><span class="pill">→ LSTM / Seq2Seq</span><span class="pill">→ Attention / Transformer</span>
+  </div>
+  <div class="hint">阅读顺序建议：先摘要+结论建立全局 → 再按"监督学习→反向传播→CNN→分布式表征→RNN→未来"分层理解 → 最后回看图与实验。</div>
+</div>
+
+</div>
+</html>
