@@ -6,7 +6,7 @@
 > Each issue ships: a structured reading note (Markdown) + a paper structure diagram (HTML).
 
 ![Update](https://img.shields.io/badge/Update-every%202%20days-orange)
-![Papers](https://img.shields.io/badge/Papers-1-blue)
+![Papers](https://img.shields.io/badge/Papers-2-blue)
 ![Strategy](https://img.shields.io/badge/Strategy-survey%20first%2C%20then%20classics-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -15,6 +15,7 @@
 | Issue | Paper | Topic | Level | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Deep learning (LeCun, Bengio, Hinton, *Nature* 2015) | Deep learning survey | Beginner | Done |
+| 2 | ImageNet Classification with Deep CNNs (Krizhevsky et al., NIPS 2012) | Classic · vision | Classic | Done |
 
 > New issues are appended automatically.
 
@@ -31,7 +32,7 @@ Inside `notes/<issue>-<paper-short-name>/`:
 Progression: survey first, then classics, then discovery tools.
 
 - [x] Survey: Deep learning (Nature 2015)
-- [ ] Classic: AlexNet (2012)
+- [x] Classic: AlexNet (2012)
 - [ ] Classic: VGG / ResNet
 - [ ] Classic: LSTM / Seq2Seq
 - [ ] Paradigm: Attention / Transformer
@@ -73,8 +74,9 @@ The **efficient-paper-reading** skill that powers this workflow is also open-sou
 ├── README.en.md           # English
 ├── LICENSE                # MIT
 ├── notes/                 # per-issue reading notes
-│   └── 01-DeepLearning-2015/
-└── skills/                # bundled open-source skill
+│   ├── 01-DeepLearning-2015/
+│   └── 02-AlexNet-2012/
+└── skills/                 # bundled open-source skill
     └── efficient-paper-reading/
         ├── SKILL.md
         ├── references/

@@ -1,0 +1,112 @@
+<html style="margin:0;padding:0;">
+<title>AlexNet 论文结构导览（NIPS 2012）</title>
+<div style="width:100%;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:#f7f8fa;color:#1f2937;padding:20px 16px;">
+<style>
+  .sec{background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:14px;box-sizing:border-box;}
+  .sec-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .sec-title .tag{font-size:12px;font-weight:600;color:#ffffff;background:#3b82f6;border-radius:4px;padding:1px 6px;}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+  .node{background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:8px 10px;font-size:14px;text-align:center;box-sizing:border-box;}
+  .node.gray{background:#f3f4f6;border-color:#9ca3af;}
+  .node.fc{background:#f5f3ff;border-color:#7c3aed;}
+  .arrow{font-size:18px;color:#3b82f6;font-weight:700;}
+  .pills{display:flex;flex-wrap:wrap;gap:6px;}
+  .pill{font-size:13px;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:999px;padding:3px 10px;}
+  .cards{display:flex;flex-wrap:wrap;gap:12px;}
+  .card{flex:1 1 280px;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-sizing:border-box;background:#fafbff;}
+  .card h4{margin:0 0 8px;font-size:15px;}
+  .card ul{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.7;}
+  .footer-line{font-size:13.5px;color:#374151;line-height:1.75;}
+  .hint{font-size:12.5px;color:#6b7280;margin-top:8px;}
+</style>
+
+<div class="sec">
+  <div class="sec-title">本期论文 · ImageNet Classification with Deep CNNs（AlexNet, NIPS 2012）<span class="tag">经典篇</span></div>
+  <div style="font-size:14px;line-height:1.8;">
+    Krizhevsky · Sutskever · Hinton（多伦多大学）。一句话主线：<b>8 层深度 CNN + ReLU + GPU 并行 + dropout/数据增强</b>，在 ImageNet 120 万图上把 top-5 错误率打到 15.3%，碾压亚军 26.2%，引爆深度学习革命。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">网络架构：5 卷积 + 3 全连接（约 6000 万参数）</div>
+  <div class="flow">
+    <div class="node">输入<br><span style="font-size:12px;color:#6b7280;">224×224×3 RGB</span></div>
+    <span class="arrow">→</span>
+    <div class="node">Conv1<br><span style="font-size:12px;color:#6b7280;">96 个 11×11, stride 4</span></div>
+    <span class="arrow">→</span>
+    <div class="node">LRN+池化<br><span style="font-size:12px;color:#6b7280;">重叠池化 s=2,z=3</span></div>
+    <span class="arrow">→</span>
+    <div class="node">Conv2<br><span style="font-size:12px;color:#6b7280;">256 个 5×5</span></div>
+    <span class="arrow">→</span>
+    <div class="node">LRN+池化</div>
+    <span class="arrow">→</span>
+    <div class="node">Conv3–5<br><span style="font-size:12px;color:#6b7280;">384/384/256 个 3×3</span></div>
+    <span class="arrow">→</span>
+    <div class="node gray">池化</div>
+    <span class="arrow">→</span>
+    <div class="node fc">FC1–FC2<br><span style="font-size:12px;color:#6b7280;">各 4096 维 + dropout 0.5</span></div>
+    <span class="arrow">→</span>
+    <div class="node fc">FC3<br><span style="font-size:12px;color:#6b7280;">1000 类 softmax</span></div>
+  </div>
+  <div class="hint">每层输出后接 ReLU（max(0,x)）；Conv2/4/5 的 kernel 只与本 GPU 上层的 kernel map 相连，Conv3 跨 GPU 全连接——即论文中的双 GPU 分工。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">四大关键设计（按重要性排序）</div>
+  <div class="cards">
+    <div class="card">
+      <h4 style="color:#2563eb;">① ReLU 非线性</h4>
+      <ul>
+        <li>非饱和激活，深层 CNN 收敛比 tanh 快约 6 倍</li>
+        <li>没有 ReLU 就无法在当时算力下训 8 层网络</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="color:#2563eb;">② 双 GPU 并行</h4>
+      <ul>
+        <li>两张 GTX 580 3GB 各管一半 kernel</li>
+        <li>仅特定层跨 GPU 通信，误差还比单 GPU 减半卷积核低 1.7%/1.2%</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="color:#059669;">③ 数据增强（抗过拟合）</h4>
+      <ul>
+        <li>随机裁剪 + 水平翻转：等效 2048 倍扩增</li>
+        <li>PCA 颜色抖动：沿 RGB 主成分扰动，模拟光照不变性，top-1 降 1%+</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="color:#059669;">④ Dropout（抗过拟合）</h4>
+      <ul>
+        <li>FC 层 0.5 概率随机置零，抑制神经元 co-adaptation</li>
+        <li>相当于指数多个模型的集成，训练时间约 ×2</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">成绩对比（ILSVRC-2012 图像分类）</div>
+  <div class="footer-line">
+    <b style="color:#2563eb;">AlexNet（7 个 CNN 集成）</b>：top-5 错误率 <b>15.3%</b>　|　<b style="color:#b45309;">亚军（Fisher Vector 方案）</b>：26.2%　|　相对最佳对手 <b>提升约 11 个百分点</b>。<br>
+    消融结论：<b>移除任一卷积层 top-1 掉约 2%</b>（深度确实重要）；LRN 降 1.4%/1.2%；重叠池化降 0.4%/0.3%。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">局限与后续演进</div>
+  <div class="footer-line">
+    训 5–6 天 × 2 张 3GB GPU（算力硬瓶颈）· LRN 后被 Batch Normalization 取代 · 纯监督、依赖大规模标注 · 深度距人脑视觉通路还差几个数量级。<br>
+    <b>后续路线</b>：VGG（把卷积核统一为 3×3、加深到 16 层）→ ResNet（残差连接推到 152 层）→ Transformer（注意力取代卷积）。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">推荐阅读顺序</div>
+  <div class="pills">
+    <span class="pill">摘要+结果表（先建立全局）</span><span class="pill">Fig.1 ReLU vs tanh 收敛</span><span class="pill">Fig.2 双 GPU 架构</span><span class="pill">第 4 节 抗过拟合技巧</span><span class="pill">第 7 节 讨论（深度重要性）</span>
+  </div>
+</div>
+
+</div>
+</html>

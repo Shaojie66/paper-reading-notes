@@ -6,7 +6,7 @@
 > 每期产出：结构化阅读笔记（Markdown）+ 论文结构示意图（HTML）。
 
 ![更新频率](https://img.shields.io/badge/%E6%9B%B4%E6%96%B0-%E6%AF%8F%E4%B8%A4%E5%A4%A9%E4%B8%80%E6%9C%9F-orange)
-![论文数量](https://img.shields.io/badge/%E8%AE%BA%E6%96%87-1%E7%AF%87-blue)
+![论文数量](https://img.shields.io/badge/%E8%AE%BA%E6%96%87-2%E7%AF%87-blue)
 ![选题策略](https://img.shields.io/badge/%E9%80%89%E9%A2%98-%E5%85%88%E7%BB%BC%E8%BF%B0%E5%90%8E%E7%BB%8F%E5%85%B8-brightgreen)
 ![开源协议](https://img.shields.io/badge/License-MIT-green)
 
@@ -15,6 +15,7 @@
 | 期数 | 论文 | 主题 | 难度 | 状态 |
 | --- | --- | --- | --- | --- |
 | 第 1 期 | Deep learning（LeCun, Bengio, Hinton, *Nature* 2015） | 深度学习综述 | 基础 | 已完成 |
+| 第 2 期 | ImageNet Classification with Deep CNNs（Krizhevsky et al., NIPS 2012） | 经典·视觉 | 经典 | 已完成 |
 
 > 后续每期生成后会自动追加本表。
 
@@ -31,7 +32,7 @@
 按「先综述 → 再经典 → 工具发现」由浅入深：
 
 - [x] 综述：Deep learning（Nature 2015）
-- [ ] 经典：AlexNet（2012）
+- [x] 经典：AlexNet（2012）
 - [ ] 经典：VGG / ResNet
 - [ ] 经典：LSTM / Seq2Seq
 - [ ] 范式：Attention / Transformer
@@ -73,8 +74,9 @@
 ├── README.en.md           # English version
 ├── LICENSE                # MIT 开源协议
 ├── notes/                 # 每期论文阅读笔记
-│   └── 01-DeepLearning-2015/
-└── skills/                # 配套开源 Skill
+│   ├── 01-DeepLearning-2015/
+│   └── 02-AlexNet-2012/
+└── skills/                 # 配套开源 Skill
     └── efficient-paper-reading/
         ├── SKILL.md
         ├── references/
