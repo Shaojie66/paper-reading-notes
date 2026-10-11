@@ -1,0 +1,133 @@
+<html style="margin:0;padding:0;">
+<title>VGG 论文结构导览（ICLR 2015）</title>
+<div style="width:100%;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:#f7f8fa;color:#1f2937;padding:20px 16px;">
+<style>
+  .sec{background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:14px;box-sizing:border-box;}
+  .sec-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .sec-title .tag{font-size:12px;font-weight:600;color:#ffffff;background:#7c3aed;border-radius:4px;padding:1px 6px;}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+  .node{background:#f5f3ff;border:1.5px solid #7c3aed;border-radius:8px;padding:8px 10px;font-size:14px;text-align:center;box-sizing:border-box;}
+  .node.gray{background:#f3f4f6;border-color:#9ca3af;}
+  .node.fc{background:#eef2ff;border-color:#3b82f6;}
+  .arrow{font-size:18px;color:#7c3aed;font-weight:700;}
+  .cards{display:flex;flex-wrap:wrap;gap:12px;}
+  .card{flex:1 1 300px;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-sizing:border-box;background:#fafbff;}
+  .card h4{margin:0 0 8px;font-size:15px;}
+  .card ul{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.7;}
+  .footer-line{font-size:13.5px;color:#374151;line-height:1.75;}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:4px;}
+  th,td{border:1px solid #d1d5db;padding:5px 8px;text-align:center;}
+  th{background:#f3f4f6;}
+  .hl{background:#ede9fe;font-weight:700;}
+  .hint{font-size:12.5px;color:#6b7280;margin-top:8px;}
+</style>
+
+<div class="sec">
+  <div class="sec-title">本期论文 · Very Deep Convolutional Networks（VGG, ICLR 2015）<span class="tag">经典篇</span></div>
+  <div style="font-size:14px;line-height:1.8;">
+    Simonyan &amp; Zisserman（牛津 VGG）。一句话主线：<b>全 3×3 小卷积核堆叠，把深度系统推到 16–19 层</b>，ILSVRC-2014 分类亚军（top-5 6.8%）、定位冠军（25.3%），并证明深层特征可迁移。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">核心设计：3×3 小核堆叠（深度从 11 → 19 层）</div>
+  <div class="flow">
+    <div class="node">输入 224×224×3</div>
+    <span class="arrow">→</span>
+    <div class="node">conv3-64 ×2</div>
+    <span class="arrow">→</span>
+    <div class="node gray">pool</div>
+    <span class="arrow">→</span>
+    <div class="node">conv3-128 ×2</div>
+    <span class="arrow">→</span>
+    <div class="node gray">pool</div>
+    <span class="arrow">→</span>
+    <div class="node">conv3-256 ×3</div>
+    <span class="arrow">→</span>
+    <div class="node gray">pool</div>
+    <span class="arrow">→</span>
+    <div class="node">conv3-512 ×3</div>
+    <span class="arrow">→</span>
+    <div class="node gray">pool</div>
+    <span class="arrow">→</span>
+    <div class="node">conv3-512 ×3</div>
+    <span class="arrow">→</span>
+    <div class="node gray">pool</div>
+    <span class="arrow">→</span>
+    <div class="node fc">FC 4096-4096-1000<br><span style="font-size:12px;color:#6b7280;">dropout 0.5 · softmax</span></div>
+  </div>
+  <div class="hint">上图即配置 D（VGG16）：全部卷积 3×3、stride 1、padding 1；宽度 64→128→256→512；5 个 2×2 max-pooling。配置 E（VGG19）在 256/512 段各多 1 个 3×3 层。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">为什么 3×3 堆叠优于大卷积核（§2.3）</div>
+  <div class="cards">
+    <div class="card">
+      <h4 style="color:#7c3aed;">感受野等价</h4>
+      <ul>
+        <li>两个 3×3 ≈ 一个 5×5；三个 3×3 ≈ 一个 7×7</li>
+        <li>同样覆盖 7×7 范围，能捕获同样的空间上下文</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="color:#7c3aed;">参数更少 + 非线性更多</h4>
+      <ul>
+        <li>三个 3×3 只要 27C² 参数，一个 7×7 要 49C²——省 81%</li>
+        <li>中间多两次 ReLU，决策函数判别力更强</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="color:#059669;">实验佐证</h4>
+      <ul>
+        <li>把 B 的每对 3×3 换成 5×5：top-1 高 7%</li>
+        <li>C（含 1×1）不如 D（全 3×3）：真实感受野比纯加非线性更重要</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">深度消融（单尺度 val，top-1/top-5 错误率）</div>
+  <table>
+    <tr><th>配置</th><th>层数</th><th>参数</th><th>top-1</th><th>top-5</th></tr>
+    <tr><td>A</td><td>11</td><td>133M</td><td>29.6</td><td>10.4</td></tr>
+    <tr><td>B</td><td>13</td><td>133M</td><td>28.7</td><td>9.9</td></tr>
+    <tr><td>C（含 1×1）</td><td>16</td><td>134M</td><td>28.1</td><td>9.4</td></tr>
+    <tr class="hl"><td>D（VGG16）</td><td>16</td><td>138M</td><td>27.0</td><td>8.8</td></tr>
+    <tr><td>E（VGG19）</td><td>19</td><td>144M</td><td>27.3</td><td>9.0</td></tr>
+  </table>
+  <div class="hint">加深持续降错，到 19 层饱和；多尺度训练 + 多尺度测试后 D / E 均达 24.8 / 7.5。LRN 被证明无提升，配置中直接弃用。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">成绩对比（ILSVRC-2014 分类，无外部数据）</div>
+  <table>
+    <tr><th>方法</th><th>top-5 test</th></tr>
+    <tr class="hl"><td>VGG 2 网络集成（dense+multi-crop）</td><td>6.8%</td></tr>
+    <tr class="hl"><td>VGG 单网络（最优）</td><td>7.0%</td></tr>
+    <tr><td>GoogLeNet 7 网络（冠军）</td><td>6.7%</td></tr>
+    <tr><td>GoogLeNet 单网络</td><td>7.9%</td></tr>
+    <tr><td>Clarifai（ILSVRC-2013 冠军）</td><td>11.7%</td></tr>
+    <tr><td>Zeiler &amp; Fergus（2013）</td><td>14.8%</td></tr>
+    <tr><td>Krizhevsky et al.（AlexNet 2012）</td><td>16.4%</td></tr>
+  </table>
+  <div class="footer-line" style="margin-top:8px;">单网络 7.0% 胜过单 GoogLeNet 7.9%；定位任务 VGG 以 25.3% 夺冠。迁移性：VGG 特征 + 线性 SVM 在 VOC-2007 mAP 89.3、Caltech-256 85.0，均为当时 SOTA。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">局限与后续演进</div>
+  <div class="footer-line">
+    138–144M 参数（主要在 FC）、4× Titan Black 训 2–3 周；深度 19 层饱和，「更深退化」未解决。<br>
+    <b>后续路线</b>：ResNet（残差连接解决退化、推到 152 层）→ Inception 系 → 轻量骨干（MobileNet）→ Transformer。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">推荐阅读顺序</div>
+  <div class="footer-line">
+    Table 1（配置 A–E 演化）→ §2.3（3×3 堆叠论证）→ Table 3/4（深度与多尺度消融）→ Table 7（SOTA 对比）→ 附录 B（迁移性）。
+  </div>
+</div>
+
+</div>
+</html>

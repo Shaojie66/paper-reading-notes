@@ -6,7 +6,7 @@
 > Each issue ships: a structured reading note (Markdown) + a paper structure diagram (HTML).
 
 ![Update](https://img.shields.io/badge/Update-every%202%20days-orange)
-![Papers](https://img.shields.io/badge/Papers-2-blue)
+![Papers](https://img.shields.io/badge/Papers-3-blue)
 ![Strategy](https://img.shields.io/badge/Strategy-survey%20first%2C%20then%20classics-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -16,6 +16,7 @@
 | --- | --- | --- | --- | --- |
 | 1 | Deep learning (LeCun, Bengio, Hinton, *Nature* 2015) | Deep learning survey | Beginner | Done |
 | 2 | ImageNet Classification with Deep CNNs (Krizhevsky et al., NIPS 2012) | Classic · vision | Classic | Done |
+| 3 | Very Deep Convolutional Networks (Simonyan & Zisserman, ICLR 2015) | Classic · vision | Classic | Done |
 
 > New issues are appended automatically.
 
@@ -33,7 +34,8 @@ Progression: survey first, then classics, then discovery tools.
 
 - [x] Survey: Deep learning (Nature 2015)
 - [x] Classic: AlexNet (2012)
-- [ ] Classic: VGG / ResNet
+- [x] Classic: VGG (2015)
+- [ ] Classic: ResNet (2016)
 - [ ] Classic: LSTM / Seq2Seq
 - [ ] Paradigm: Attention / Transformer
 - [ ] Frontier: selected dynamically by research direction (coverage path planning / AI ethics / social media & wellbeing)
@@ -57,7 +59,7 @@ The **efficient-paper-reading** skill that powers this workflow is also open-sou
 ## Update Mechanism
 
 - Scheduled task "One paper every two days": triggered every 2 days at 20:30 (Europe/London);
-- Pipeline: search candidates → pick one → read full text → generate note + diagram → push to this repo (including README maintenance);
+- Pipeline: search candidates → pick one → read full text → generate note + diagram → push to this repo (including README maintenance) → write into the Obsidian vault (or deliver the Obsidian-format file);
 - If retrieval fails, it retries with alternative public sources — no issue is skipped.
 
 ## Usage
@@ -75,7 +77,8 @@ The **efficient-paper-reading** skill that powers this workflow is also open-sou
 ├── LICENSE                # MIT
 ├── notes/                 # per-issue reading notes
 │   ├── 01-DeepLearning-2015/
-│   └── 02-AlexNet-2012/
+│   ├── 02-AlexNet-2012/
+│   └── 03-VGG-2015/
 └── skills/                 # bundled open-source skill
     └── efficient-paper-reading/
         ├── SKILL.md
