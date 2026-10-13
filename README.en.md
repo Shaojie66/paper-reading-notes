@@ -6,7 +6,7 @@
 > Each issue ships: a structured reading note (Markdown) + a paper structure diagram (HTML).
 
 ![Update](https://img.shields.io/badge/Update-every%202%20days-orange)
-![Papers](https://img.shields.io/badge/Papers-3-blue)
+![Papers](https://img.shields.io/badge/Papers-4-blue)
 ![Strategy](https://img.shields.io/badge/Strategy-survey%20first%2C%20then%20classics-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -17,6 +17,7 @@
 | 1 | Deep learning (LeCun, Bengio, Hinton, *Nature* 2015) | Deep learning survey | Beginner | Done |
 | 2 | ImageNet Classification with Deep CNNs (Krizhevsky et al., NIPS 2012) | Classic · vision | Classic | Done |
 | 3 | Very Deep Convolutional Networks (Simonyan & Zisserman, ICLR 2015) | Classic · vision | Classic | Done |
+| 4 | Deep Residual Learning for Image Recognition (He et al., CVPR 2016) | Classic · vision | Classic | Done |
 
 > New issues are appended automatically.
 
@@ -35,7 +36,7 @@ Progression: survey first, then classics, then discovery tools.
 - [x] Survey: Deep learning (Nature 2015)
 - [x] Classic: AlexNet (2012)
 - [x] Classic: VGG (2015)
-- [ ] Classic: ResNet (2016)
+- [x] Classic: ResNet (2016)
 - [ ] Classic: LSTM / Seq2Seq
 - [ ] Paradigm: Attention / Transformer
 - [ ] Frontier: selected dynamically by research direction (coverage path planning / AI ethics / social media & wellbeing)
@@ -78,7 +79,8 @@ The **efficient-paper-reading** skill that powers this workflow is also open-sou
 ├── notes/                 # per-issue reading notes
 │   ├── 01-DeepLearning-2015/
 │   ├── 02-AlexNet-2012/
-│   └── 03-VGG-2015/
+│   ├── 03-VGG-2015/
+│   └── 04-ResNet-2016/
 └── skills/                 # bundled open-source skill
     └── efficient-paper-reading/
         ├── SKILL.md

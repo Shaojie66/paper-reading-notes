@@ -1,0 +1,139 @@
+<html style="margin:0;padding:0;">
+<title>ResNet 论文结构导览（CVPR 2016）</title>
+<div style="width:100%;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:#f7f8fa;color:#1f2937;padding:20px 16px;">
+<style>
+  .sec{background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:14px;box-sizing:border-box;}
+  .sec-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .sec-title .tag{font-size:12px;font-weight:600;color:#ffffff;background:#2563eb;border-radius:4px;padding:1px 6px;}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+  .node{background:#eff6ff;border:1.5px solid #2563eb;border-radius:8px;padding:8px 10px;font-size:14px;text-align:center;box-sizing:border-box;}
+  .node.gray{background:#f3f4f6;border-color:#9ca3af;}
+  .shortcut{background:#ecfdf5;border:1.5px dashed #059669;border-radius:8px;padding:8px 10px;font-size:13px;text-align:center;box-sizing:border-box;}
+  .arrow{font-size:18px;color:#2563eb;font-weight:700;}
+  .cards{display:flex;flex-wrap:wrap;gap:12px;}
+  .card{flex:1 1 300px;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-sizing:border-box;background:#fafbff;}
+  .card h4{margin:0 0 8px;font-size:15px;}
+  .card ul{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.7;}
+  .footer-line{font-size:13.5px;color:#374151;line-height:1.75;}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:4px;}
+  th,td{border:1px solid #d1d5db;padding:5px 8px;text-align:center;}
+  th{background:#f3f4f6;}
+  .hl{background:#dbeafe;font-weight:700;}
+  .bad{background:#fee2e2;}
+  .hint{font-size:12.5px;color:#6b7280;margin-top:8px;}
+</style>
+
+<div class="sec">
+  <div class="sec-title">本期论文 · Deep Residual Learning for Image Recognition（ResNet, CVPR 2016）<span class="tag">经典篇</span></div>
+  <div style="font-size:14px;line-height:1.8;">
+    He Kaiming 等（Microsoft Research）。一句话主线：<b>恒等捷径连接把「学新函数」改为「学残差」</b>，让 152 层深度真正可训，ILSVRC 2015 五项第一（分类集成 top-5 3.57%）。<br>
+    直接回答第 3 期 VGG 的遗留问题：为什么更深反而退化。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">核心问题：退化（Degradation）</div>
+  <div class="cards">
+    <div class="card">
+      <h4 style="color:#b91c1c;">现象</h4>
+      <ul>
+        <li>加深 → 训练误差反而升高（非过拟合）</li>
+        <li>plain-18 top-1 27.94 vs plain-34 28.54</li>
+        <li>梯度消失已被 BN 解决，退化是<b>优化</b>问题</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="color:#b91c1c;">构造性反证</h4>
+      <ul>
+        <li>额外层设为恒等映射，深层解空间必含浅层解</li>
+        <li>即「恒等映射」一定存在且不差</li>
+        <li>但 SGD 求解器找不到它 → 学残差让恒等变便宜</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">方法：残差块（Residual Block）</div>
+  <div class="flow">
+    <div class="node">输入 x</div>
+    <span class="arrow">→</span>
+    <div class="node">weight layer<br><span style="font-size:12px;color:#6b7280;">3×3 conv</span></div>
+    <span class="arrow">→</span>
+    <div class="node gray">ReLU</div>
+    <span class="arrow">→</span>
+    <div class="node">weight layer<br><span style="font-size:12px;color:#6b7280;">3×3 conv</span></div>
+    <span class="arrow">→</span>
+    <div class="node hl">＋</div>
+    <span class="arrow">→</span>
+    <div class="node gray">ReLU</div>
+    <span class="arrow">→</span>
+    <div class="node">输出 F(x)+x</div>
+    <div class="shortcut" style="width:100%;max-width:520px;">恒等捷径 identity shortcut：直接 +x，零参数、零计算（维度变化时用 1×1 投影匹配）</div>
+  </div>
+  <div class="hint">y = F(x,{Wᵢ}) + x（式 1）。残差函数 F 通常为 2 层（3×3-3×3）或瓶颈 3 层（1×1-3×3-1×1，用于 50/101/152 层）。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">加深即增益：ImageNet 消融（top-1 验证误差，10-crop）</div>
+  <table>
+    <tr><th>模型</th><th>top-1 err</th><th>结论</th></tr>
+    <tr class="bad"><td>plain-18</td><td>27.94</td><td rowspan="2">更深更差：退化</td></tr>
+    <tr class="bad"><td>plain-34</td><td>28.54</td></tr>
+    <tr class="hl"><td>ResNet-18</td><td>27.88</td><td rowspan="2">更深更好：残差反转（+2.8%）</td></tr>
+    <tr class="hl"><td>ResNet-34</td><td>25.03</td></tr>
+  </table>
+  <div class="hint">ResNet-34 相对 plain-34 降 3.5%，且训练误差同步下降（优化被解决）。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">极深与集成（ImageNet）</div>
+  <table>
+    <tr><th>模型</th><th>top-1 err</th><th>top-5 err</th></tr>
+    <tr><td>ResNet-50</td><td>20.74</td><td>5.25</td></tr>
+    <tr><td>ResNet-101</td><td>19.87</td><td>4.60</td></tr>
+    <tr class="hl"><td>ResNet-152（单模型）</td><td>19.38</td><td>4.49</td></tr>
+    <tr class="hl"><td>ResNet 6 模型集成（test）</td><td>—</td><td>3.57%</td></tr>
+  </table>
+  <div class="footer-line" style="margin-top:8px;">152 层单模型即超过此前所有集成；集成 3.57% 为 ILSVRC-2015 冠军（VGG v5 6.8%、PReLU-net 4.94%、BN-inception 4.82%）。152 层 FLOPs 11.3G，仍低于 VGG-19 的 19.6G。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">可迁移性：检测与 CIFAR</div>
+  <div class="cards">
+    <div class="card">
+      <h4 style="color:#2563eb;">Faster R-CNN 换骨干</h4>
+      <ul>
+        <li>COCO mAP@[.5,.95]：VGG-16 21.2 → ResNet-101 27.2（相对 +28%，纯特征收益）</li>
+        <li>PASCAL VOC 2007：73.2 → 76.4</li>
+        <li>2015 竞赛：检测 62.1、定位 9.0（相对降 64%）均第一</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="color:#2563eb;">CIFAR-10 极深</h4>
+      <ul>
+        <li>20 层 8.75 → 110 层 6.43（SOTA 级，1.7M 参数）</li>
+        <li>1202 层训练误差 &lt;0.1%，但测试 7.93%——过拟合</li>
+        <li>层响应 std 更小：残差函数确实接近零（预条件化证据）</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">局限与后续演进</div>
+  <div class="footer-line">
+    1202 层在 CIFAR 过拟合；未用 dropout/maxout 强正则；恒等捷径是否最优未完全回答。<br>
+    <b>后续路线</b>：ResNet v2（pre-activation 分析）→ DenseNet / ResNeXt → 残差进入 Transformer（每层残差块）→ 现代骨干。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">推荐阅读顺序</div>
+  <div class="footer-line">
+    §3.1–3.2（残差与恒等捷径论证）→ Table 2/3（退化与反转）→ Fig.5（瓶颈块）→ Table 5（3.57% 集成）→ §4.2（CIFAR 极深 + 层响应分析）。
+  </div>
+</div>
+
+</div>
+</html>
