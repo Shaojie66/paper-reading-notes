@@ -6,7 +6,7 @@
 > Each issue ships: a structured reading note (Markdown) + a paper structure diagram (HTML).
 
 ![Update](https://img.shields.io/badge/Update-every%202%20days-orange)
-![Papers](https://img.shields.io/badge/Papers-5-blue)
+![Papers](https://img.shields.io/badge/Papers-6-blue)
 ![Strategy](https://img.shields.io/badge/Strategy-survey%20first%2C%20then%20classics-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -19,6 +19,7 @@
 | 3 | Very Deep Convolutional Networks (Simonyan & Zisserman, ICLR 2015) | Classic · vision | Classic | Done |
 | 4 | Deep Residual Learning for Image Recognition (He et al., CVPR 2016) | Classic · vision | Classic | Done |
 | 5 | Long Short-Term Memory (Hochreiter & Schmidhuber, Neural Computation 1997) | Classic · sequence | Classic | Done |
+| 6 | Sequence to Sequence Learning with Neural Networks (Sutskever et al., NIPS 2014) | Classic · sequence | Classic | Done |
 
 > New issues are appended automatically.
 
@@ -39,7 +40,7 @@ Progression: survey first, then classics, then discovery tools.
 - [x] Classic: VGG (2015)
 - [x] Classic: ResNet (2016)
 - [x] Classic: LSTM (1997)
-- [ ] Classic: Seq2Seq
+- [x] Classic: Seq2Seq (2014)
 - [ ] Paradigm: Attention / Transformer
 - [ ] Frontier: selected dynamically by research direction (coverage path planning / AI ethics / social media & wellbeing)
 
@@ -83,7 +84,8 @@ The **efficient-paper-reading** skill that powers this workflow is also open-sou
 │   ├── 02-AlexNet-2012/
 │   ├── 03-VGG-2015/
 │   ├── 04-ResNet-2016/
-│   └── 05-LSTM-1997/
+│   ├── 05-LSTM-1997/
+│   └── 06-Seq2Seq-2014/
 └── skills/                 # bundled open-source skill
     └── efficient-paper-reading/
         ├── SKILL.md

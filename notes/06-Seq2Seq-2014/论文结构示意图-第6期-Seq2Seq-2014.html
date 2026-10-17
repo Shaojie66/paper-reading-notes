@@ -1,0 +1,117 @@
+<html style="margin:0;padding:0;">
+<title>Seq2Seq 论文结构导览（NIPS 2014）</title>
+<div style="width:100%;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:#f7f8fa;color:#1f2937;padding:20px 16px;">
+<style>
+  .sec{background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:14px;box-sizing:border-box;}
+  .sec-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .sec-title .tag{font-size:12px;font-weight:600;color:#ffffff;background:#0d9488;border-radius:4px;padding:1px 6px;}
+  .cards{display:flex;flex-wrap:wrap;gap:12px;}
+  .card{flex:1 1 300px;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-sizing:border-box;background:#fafbff;}
+  .card h4{margin:0 0 8px;font-size:15px;}
+  .card ul{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.7;}
+  .footer-line{font-size:13.5px;color:#374151;line-height:1.75;}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:4px;}
+  th,td{border:1px solid #d1d5db;padding:5px 8px;text-align:center;}
+  th{background:#f3f4f6;}
+  .good{background:#dcfce7;font-weight:700;}
+  .bad{background:#fee2e2;}
+  .box{border:2px solid #0d9488;border-radius:10px;padding:10px;background:#f0fdfa;box-sizing:border-box;font-size:13.5px;}
+  .rev{background:#fff7ed;border:2px solid #f59e0b;border-radius:10px;padding:10px;box-sizing:border-box;font-size:13.5px;}
+  .arrow{font-size:15px;color:#0d9488;font-weight:700;}
+  .hint{font-size:12.5px;color:#6b7280;margin-top:8px;}
+</style>
+
+<div class="sec">
+  <div class="sec-title">本期论文 · Sequence to Sequence Learning with Neural Networks（NIPS 2014）<span class="tag">经典篇</span></div>
+  <div style="font-size:14px;line-height:1.8;">
+    Sutskever / Vinyals / Le（Google）。一句话主线：<b>encoder 把变长序列压成固定向量 v，decoder 从 v 生成目标序列</b>；「反转源句」缩短最小时间滞，让纯神经翻译首次超越短语 SMT。<br>
+    承接第 5 期 LSTM：本文是 LSTM 从「记忆」到「序列到序列」的关键一跃。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">问题</div>
+  <div class="cards">
+    <div class="card">
+      <h4 style="color:#b91c1c;">DNN 的维度限制</h4>
+      <ul>
+        <li>输入/目标必须是固定维度向量</li>
+        <li>翻译、语音、问答都是变长→变长</li>
+        <li>长度不同、对齐非单调，标准 RNN 难用</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="color:#b91c1c;">当时现状</h4>
+      <ul>
+        <li>神经方法只做 SMT n-best rescore</li>
+        <li>纯神经翻译未超过短语 SMT baseline（33.30 BLEU）</li>
+        <li>长时滞大 → 但 LSTM 正是为此设计</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">方法：Encoder-Decoder 架构（Fig.1 示意）</div>
+  <div style="display:flex;flex-wrap:wrap;align-items:stretch;justify-content:center;gap:10px;text-align:center;">
+    <div class="box" style="flex:1 1 240px;">
+      <b>Encoder（4 层 LSTM，读反转源句）</b><br>
+      输入：C B A &lt;EOS&gt;（原句 a,b,c 反转）<br>
+      <div style="margin:6px 0;font-weight:700;">v = 最后隐状态（8000 维）</div>
+      <div style="font-size:12.5px;color:#0f766e;">把变长序列压成固定向量</div>
+    </div>
+    <div class="arrow" style="align-self:center;">→</div>
+    <div class="box" style="flex:1 1 240px;">
+      <b>Decoder（4 层 LSTM，条件语言模型）</b><br>
+      初始状态 = v<br>
+      输出：W X Y Z &lt;EOS&gt;<br>
+      <div style="font-size:12.5px;color:#0f766e;margin-top:4px;">p(y_t | v, y&lt;t) 逐词 softmax（80k 词表）</div>
+    </div>
+  </div>
+  <div class="rev" style="margin-top:10px;">
+    <b>关键技巧 · 反转源句</b>：原句 a,b,c → 读入 c,b,a。对应词平均距离不变，但源句首词与目标首词紧邻 → <b>最小时间滞大幅缩短</b>，SGD 更容易「建立通信」。
+    数据：困惑度 5.8→4.7，解码 BLEU 25.9→30.6（+4.4）。
+  </div>
+  <div class="hint">三个关键设计：① 两个独立 LSTM（encoder/decoder）；② 深层 4 层 LSTM（每层 +近 10% 困惑度下降）；③ 反转源句。解码用 beam search（beam=2 获得大部分收益）。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">效果：BLEU 消融（WMT'14 英→法 ntst14）</div>
+  <table>
+    <tr><th>方法</th><th>BLEU</th></tr>
+    <tr><td>Bahdanau et al. [2]（attention 早期版）</td><td>28.45</td></tr>
+    <tr><td>SMT baseline [29]</td><td class="bad">33.30</td></tr>
+    <tr><td>单 forward LSTM, beam 12</td><td>26.17</td></tr>
+    <tr><td>单 reversed LSTM, beam 12</td><td>30.59</td></tr>
+    <tr><td>5× reversed 集成, beam 2</td><td>34.50</td></tr>
+    <tr><td><b>5× reversed 集成, beam 12</b></td><td class="good">34.81</td></tr>
+    <tr><td>Rescore baseline 1000-best（5 集成）</td><td class="good">36.5</td></tr>
+    <tr><td>当时 WMT'14 最佳系统 [9]</td><td>37.0</td></tr>
+  </table>
+  <div class="footer-line" style="margin-top:8px;">纯神经翻译（BLEU 34.81）首次超越短语 SMT（33.30）；rescore 后 36.5 接近当时最好。长句表现：35 词内无退化、最长句仅轻微退化。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">句向量表示（Fig.2 PCA）</div>
+  <div class="footer-line">
+    同一含义的短语按语义聚簇：<b>词序敏感</b>（John admires Mary ≠ Mary admires John，分处两簇）而 <b>主动/被动相对不变</b>（同一簇内结构相似）——bag-of-words 做不到这一点。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">局限与演进</div>
+  <div class="footer-line">
+    固定词表（OOV→UNK）→ 生僻词句 BLEU 下降（后由 subword/BPE 解决）；整句压进固定向量 = 信息瓶颈（同届 Bahdanau attention 对症下药）；反转缺完整理论解释；需 12M 句对 + 8 GPU×10 天。<br>
+    <b>演进路线</b>：本架构 → Bahdanau attention（2015）→ Transformer（2017，取消显式循环）→ 预训练语言模型。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">推荐阅读顺序</div>
+  <div class="footer-line">
+    §2（模型与三个关键设计）→ §3.3（反转源句）→ Table 1/2（BLEU 消融）→ Fig.2（句向量）→ §3.7（长句）。
+  </div>
+</div>
+
+</div>
+</html>
