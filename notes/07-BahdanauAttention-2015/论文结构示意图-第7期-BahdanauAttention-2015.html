@@ -1,0 +1,127 @@
+<html style="margin:0;padding:0;">
+<title>Bahdanau Attention 论文结构导览（ICLR 2015）</title>
+<div style="width:100%;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:#f7f8fa;color:#1f2937;padding:20px 16px;">
+<style>
+  .sec{background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:14px;box-sizing:border-box;}
+  .sec-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .sec-title .tag{font-size:12px;font-weight:600;color:#ffffff;background:#7c3aed;border-radius:4px;padding:1px 6px;}
+  .cards{display:flex;flex-wrap:wrap;gap:12px;}
+  .card{flex:1 1 300px;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-sizing:border-box;background:#fafbff;}
+  .card h4{margin:0 0 8px;font-size:15px;}
+  .card ul{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.7;}
+  .footer-line{font-size:13.5px;color:#374151;line-height:1.75;}
+  table{border-collapse:collapse;width:100%;font-size:13px;margin-top:4px;}
+  th,td{border:1px solid #d1d5db;padding:4px 7px;text-align:center;}
+  th{background:#f3f4f6;}
+  .good{background:#dcfce7;font-weight:700;}
+  .bad{background:#fee2e2;}
+  .formula{background:#f5f3ff;border:1.5px solid #c4b5fd;border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.9;box-sizing:border-box;}
+  .box{border:2px solid #7c3aed;border-radius:10px;padding:10px;background:#faf5ff;box-sizing:border-box;font-size:13.5px;}
+  .arrow{font-size:15px;color:#7c3aed;font-weight:700;}
+  .hint{font-size:12.5px;color:#6b7280;margin-top:8px;}
+</style>
+
+<div class="sec">
+  <div class="sec-title">本期论文 · Neural Machine Translation by Jointly Learning to Align and Translate（ICLR 2015）<span class="tag">范式·Attention 起源</span></div>
+  <div style="font-size:14px;line-height:1.8;">
+    Bahdanau / Cho / Bengio。一句话主线：把 Seq2Seq 的<b>固定向量</b>换成<b>逐词检索的上下文向量</b>——解码每个目标词时，用可微「对齐模型」给源句各词打分（软注意力），取加权和作为 c_i。长句瓶颈被打破，单模型无 UNK 句 BLEU 36.15 超过短语 SMT。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">问题：固定向量 = 信息瓶颈</div>
+  <div class="cards">
+    <div class="card">
+      <h4 style="color:#b91c1c;">基本 encoder-decoder</h4>
+      <ul>
+        <li>整句压缩进一个固定向量 c（Seq2Seq 用 h_T）</li>
+        <li>长句信息被「压扁」丢失</li>
+        <li>Cho 2014b 实证：性能随句长急剧恶化</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="color:#b91c1c;">传统 SMT</h4>
+      <ul>
+        <li>需要显式硬对齐 / 潜在变量</li>
+        <li>短语长度不匹配 → [NULL] 映射等反直觉处理</li>
+        <li>各子组件分开调优</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">方法：RNNsearch = 双向编码 + 软对齐解码</div>
+  <div style="display:flex;flex-wrap:wrap;align-items:stretch;justify-content:center;gap:10px;text-align:center;">
+    <div class="box" style="flex:1 1 220px;">
+      <b>Encoder：BiRNN</b><br>
+      正向 →h_j + 反向 ←h_j<br>
+      <div style="font-size:12.5px;color:#6d28d9;margin-top:4px;">注解 h_j = [→h_j ; ←h_j]<br>每个词看到前后文</div>
+    </div>
+    <div class="arrow" style="align-self:center;">→</div>
+    <div class="box" style="flex:1 1 260px;">
+      <b>对齐模型（attention）</b><br>
+      e_ij = a(s_{i-1}, h_j) &nbsp;（前馈网络，联合训练）<br>
+      α_ij = softmax(e_ij)
+    </div>
+    <div class="arrow" style="align-self:center;">→</div>
+    <div class="box" style="flex:1 1 220px;">
+      <b>逐词上下文</b><br>
+      c_i = Σ_j α_ij · h_j<br>
+      <div style="font-size:12.5px;color:#6d28d9;margin-top:4px;">期望注解（soft-search）</div>
+    </div>
+    <div class="arrow" style="align-self:center;">→</div>
+    <div class="box" style="flex:1 1 200px;">
+      <b>Decoder（GRU）</b><br>
+      s_i = f(s_{i-1}, y_{i-1}, c_i)<br>
+      <div style="font-size:12.5px;color:#6d28d9;margin-top:4px;">逐词生成 y_i（beam search）</div>
+    </div>
+  </div>
+  <div class="formula" style="margin-top:10px;">
+    <b>核心公式</b>：<br>
+    c_i = Σ<sub>j</sub> α<sub>ij</sub>h<sub>j</sub>，&nbsp;&nbsp; α<sub>ij</sub> = exp(e<sub>ij</sub>) / Σ<sub>k</sub>exp(e<sub>ik</sub>)，&nbsp;&nbsp; e<sub>ij</sub> = v_aᵀ tanh(W_a s<sub>i-1</sub> + U_a h<sub>j</sub>)<br>
+    <span style="font-size:12.5px;color:#6b7280;">加法注意力（additive attention）。固定 c_i = →h_T 即退化回 RNNencdec——消融验证「逐词检索」才是增益来源。</span>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">效果：BLEU（WMT'14 英→法 news-test-2014，Table 1）</div>
+  <table>
+    <tr><th>模型</th><th>全部句子</th><th>无 UNK 句</th></tr>
+    <tr><td>RNNencdec-30（基本 encoder-decoder）</td><td class="bad">13.93</td><td>24.19</td></tr>
+    <tr><td>RNNsearch-30</td><td>21.50</td><td>31.44</td></tr>
+    <tr><td>RNNencdec-50</td><td class="bad">17.82</td><td>26.71</td></tr>
+    <tr><td>RNNsearch-50</td><td>26.75</td><td>34.16</td></tr>
+    <tr><td><b>RNNsearch-50\*</b></td><td class="good">28.45</td><td class="good">36.15</td></tr>
+    <tr><td>Moses（短语 SMT + 418M 词单语语料）</td><td>33.30</td><td class="bad">35.63</td></tr>
+  </table>
+  <div class="footer-line" style="margin-top:8px;">要点：任何句长下 RNNsearch 都赢 RNNencdec；<b>无 UNK 句上 RNNsearch-50\*（36.15）反超 Moses（35.63）</b>，且 Moses 还额外用了单语语料；RNNsearch-30 甚至超过 RNNencdec-50。长句：RNNsearch-50 在 50 词以上不退化（Fig.2）。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">软对齐可视化（Fig.3，示意）</div>
+  <div class="footer-line">
+    <b>英法对齐大体单调</b>（对角线强权重），但存在关键非单调对齐：<br>
+    · <b>European Economic Area → zone économique européenne</b>：先跳两词对齐 Area→zone，再回看完成短语——模型学会「跳词」；<br>
+    · <b>the man → l'homme</b>：软对齐同时看 the 与 man 才选出 l'（硬对齐做不到）；<br>
+    · 无需 [NULL] 映射即可处理源/目标短语长度不一致。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">局限与演进</div>
+  <div class="footer-line">
+    <b>局限</b>：未知词 → [UNK]（论文明列为首要未来挑战，后由 subword/BPE 解决）；每个目标词要对所有源词打分，O(T_x×T_y) 计算开销；加法注意力在长序列上不如后续点积形式高效。<br>
+    <b>演进路线</b>：本文加法注意力（RNN 内）→ <b>Transformer 自注意力（2017，点积、并行、去 RNN）</b> → 预训练语言模型（BERT/GPT）。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">推荐阅读顺序</div>
+  <div class="footer-line">
+    §3（学习对齐与翻译）→ Fig.1（模型结构）→ Fig.2（长句曲线）→ Fig.3（对齐热图）→ Table 1（BLEU）→ 附录 A.1.2（对齐模型公式）。
+  </div>
+</div>
+
+</div>
+</html>
