@@ -1,0 +1,116 @@
+<html style="margin:0;padding:0;">
+<title>Transformer 论文结构导览（NeurIPS 2017）</title>
+<div style="width:100%;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:#f7f8fa;color:#1f2937;padding:20px 16px;">
+<style>
+  .sec{background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:14px;box-sizing:border-box;}
+  .sec-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .sec-title .tag{font-size:12px;font-weight:600;color:#ffffff;background:#7c3aed;border-radius:4px;padding:1px 6px;}
+  .cards{display:flex;flex-wrap:wrap;gap:12px;}
+  .card{flex:1 1 280px;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-sizing:border-box;background:#fafbff;}
+  .card h4{margin:0 0 8px;font-size:15px;}
+  .card ul{margin:6px 0 0;padding-left:18px;font-size:13.5px;line-height:1.7;}
+  .footer-line{font-size:13.5px;color:#374151;line-height:1.75;}
+  table{border-collapse:collapse;width:100%;font-size:13px;margin-top:4px;}
+  th,td{border:1px solid #d1d5db;padding:4px 7px;text-align:center;}
+  th{background:#f3f4f6;}
+  .good{background:#dcfce7;font-weight:700;}
+  .bad{background:#fee2e2;}
+  .formula{background:#f5f3ff;border:1.5px solid #c4b5fd;border-radius:10px;padding:10px 12px;font-size:13.5px;line-height:1.9;box-sizing:border-box;}
+  .box{border:2px solid #7c3aed;border-radius:10px;padding:10px;background:#faf5ff;box-sizing:border-box;font-size:13.5px;}
+  .arrow{font-size:15px;color:#7c3aed;font-weight:700;}
+  .flow{display:flex;flex-wrap:wrap;align-items:stretch;justify-content:center;gap:8px;text-align:center;}
+  .flow .box{flex:1 1 150px;}
+  .note{font-size:12.5px;color:#6b7280;margin-top:6px;}
+</style>
+
+<div class="sec">
+  <div class="sec-title">本期论文 · Attention Is All You Need（NeurIPS 2017）<span class="tag">范式·Transformer</span></div>
+  <div style="font-size:14px;line-height:1.8;">
+    Vaswani / Shazeer / Parmar / Uszkoreit / Jones / Gomez / Kaiser / Polosukhin。一句话主线：<b>去掉 RNN 和卷积，只用注意力</b>——缩放点积注意力 + 多头 + 位置编码，全并行训练。英德 28.4 BLEU（超所有含集成结果 2+）、英法单模型 41.8 BLEU（成本不到 SOTA 的 1/4）。现代大模型（BERT/GPT）的架构源头。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">问题：三个痛点</div>
+  <div class="cards">
+    <div class="card"><h4 style="color:#b91c1c;">RNN 串行瓶颈</h4><ul><li>h_t 依赖 h_{t-1}，样本内无法并行</li><li>序列越长，批内并行受内存限制越严重</li></ul></div>
+    <div class="card"><h4 style="color:#b91c1c;">远距离依赖难学</h4><ul><li>CNN 连接两位置需 O(log_k n) 层堆叠，路径长</li><li>RNN 最大路径长 O(n)</li></ul></div>
+    <div class="card"><h4 style="color:#b91c1c;">attention 只是配角</h4><ul><li>此前 attention 总是搭配 RNN 使用</li><li>没人证明「只用 attention」就够了</li></ul></div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">方法：Transformer 架构（图 1 示意）</div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;text-align:center;">
+    <div class="box" style="flex:1 1 300px;background:#eff6ff;border-color:#2563eb;">
+      <b>Encoder ×6</b><br>
+      <div style="margin:6px 0;">① 多头自注意力<br>② position-wise FFN</div>
+      <div class="note">每子层：残差 + LayerNorm<br>输入 = 词嵌入 + 位置编码</div>
+    </div>
+    <div class="arrow" style="align-self:center;">⇄</div>
+    <div class="box" style="flex:1 1 360px;background:#fefce8;border-color:#ca8a04;">
+      <b>Decoder ×6</b><br>
+      <div style="margin:6px 0;">① 掩码多头自注意力（保自回归）<br>② encoder-decoder 注意力（Q←decoder, KV←encoder）<br>③ position-wise FFN</div>
+      <div class="note">输出右移一位 + 掩码禁止看未来 → 线性层 + softmax</div>
+    </div>
+  </div>
+  <div class="formula" style="margin-top:10px;">
+    <b>核心公式</b>：<br>
+    Attention(Q,K,V) = softmax( QK<sup>T</sup> / √d<sub>k</sub> ) V&nbsp;&nbsp;（缩放点积）<br>
+    MultiHead(Q,K,V) = Concat(head<sub>1</sub>…head<sub>h</sub>) W<sup>O</sup>，&nbsp; head<sub>i</sub> = Attention(QW<sub>i</sub><sup>Q</sup>, KW<sub>i</sub><sup>K</sup>, VW<sub>i</sub><sup>V</sup>)<br>
+    FFN(x) = max(0, xW<sub>1</sub>+b<sub>1</sub>)W<sub>2</sub>+b<sub>2</sub>&nbsp;&nbsp;&nbsp;PE<sub>(pos,2i)</sub>=sin(pos/10000<sup>2i/d</sup>), PE<sub>(pos,2i+1)</sub>=cos(...)<br>
+    <span class="note">h=8 头、d_model=512、d_ff=2048、N=6；除以 √d_k 防止点积过大把 softmax 推入梯度极小区；位置编码让模型感知顺序。</span>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">效果：翻译 BLEU（Table 2）</div>
+  <table>
+    <tr><th>模型</th><th>EN-DE</th><th>EN-FR</th><th>训练成本 (FLOPs)</th></tr>
+    <tr><td>ByteNet</td><td class="bad">23.75</td><td>—</td><td>—</td></tr>
+    <tr><td>ConvS2S Ensemble</td><td>26.36</td><td>41.29</td><td>7.7e19 / 1.2e21</td></tr>
+    <tr><td>GNMT + RL Ensemble</td><td>26.30</td><td>41.16</td><td>1.8e20 / 1.1e21</td></tr>
+    <tr><td>MoE</td><td>26.03</td><td>40.56</td><td>2.0e19 / 1.2e20</td></tr>
+    <tr><td><b>Transformer (base)</b></td><td class="good">27.3</td><td>38.1</td><td class="good">3.3e18</td></tr>
+    <tr><td><b>Transformer (big)</b></td><td class="good">28.4</td><td class="good">41.8</td><td>2.3e19</td></tr>
+  </table>
+  <div class="footer-line" style="margin-top:8px;">英德：big 28.4 超此前所有<b>含集成</b>结果 2+ BLEU；英法：单模型 41.8 BLEU，训练成本不到 SOTA 的 1/4。泛化：英文句法分析 WSJ-only F1 91.3（超 BerkeleyParser 90.4）、半监督 92.7。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">复杂度对照（Table 1）</div>
+  <table>
+    <tr><th>层类型</th><th>每层复杂度</th><th>顺序操作</th><th>最大路径长</th></tr>
+    <tr><td><b>Self-Attention</b></td><td>O(n²·d)</td><td class="good">O(1)</td><td class="good">O(1)</td></tr>
+    <tr><td>Recurrent</td><td>O(n·d²)</td><td class="bad">O(n)</td><td class="bad">O(n)</td></tr>
+    <tr><td>Convolutional</td><td>O(k·n·d²)</td><td>O(1)</td><td>O(log_k n)</td></tr>
+  </table>
+  <div class="footer-line">自注意力以 O(n²) 计算换取 O(1) 路径长与全并行——长序列的代价由后续 FlashAttention / 稀疏注意力缓解。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">消融要点（Table 3，EN-DE dev）</div>
+  <div class="footer-line">
+    · 头数：单头 24.9（-0.9），头过多也下降 → 多头必要但非越多越好<br>
+    · 减小 d<sub>k</sub> 伤质量 → 兼容性函数本身难学<br>
+    · 大模型更好、dropout 显著防过拟合；学习位置嵌入 ≈ 正弦位置编码（25.7 vs 25.8）
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">局限与演进</div>
+  <div class="footer-line">
+    <b>局限</b>：O(n²) 自注意力对长序列成本高；无归纳偏置、位置全靠注入（后由 RoPE/ALiBi 改进）；生成仍自回归顺序化。<br>
+    <b>演进路线</b>：Bahdanau 加法注意力（第 7 期）→ 本文缩放点积 + 多头（去 RNN）→ <b>BERT（双向预训练）</b> / GPT（自回归预训练）→ 大语言模型。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">推荐阅读顺序</div>
+  <div class="footer-line">
+    §3.2（注意力与多头）→ §3.5（位置编码）→ §4（为什么自注意力 + Table 1）→ §6.1（翻译结果 + Table 2）→ §6.2（消融 + Table 3）→ 附录注意力可视化。
+  </div>
+</div>
+
+</div>
+</html>
