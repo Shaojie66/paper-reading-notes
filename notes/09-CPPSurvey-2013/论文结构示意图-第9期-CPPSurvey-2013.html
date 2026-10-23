@@ -1,0 +1,102 @@
+<html style="margin:0;padding:0;">
+<title>覆盖路径规划综述（Galceran & Carreras 2013）结构导览</title>
+<div style="width:100%;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:#f7f8fa;color:#1f2937;padding:20px 16px;">
+<style>
+  .sec{background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:14px;box-sizing:border-box;}
+  .sec-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .sec-title .tag{font-size:12px;font-weight:600;color:#ffffff;background:#0e7490;border-radius:4px;padding:1px 6px;}
+  .cards{display:flex;flex-wrap:wrap;gap:12px;}
+  .card{flex:1 1 260px;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-sizing:border-box;background:#fafbff;}
+  .card h4{margin:0 0 8px;font-size:14.5px;}
+  .card ul{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.7;}
+  .footer-line{font-size:13.5px;color:#374151;line-height:1.75;}
+  .cat{display:flex;flex-wrap:wrap;gap:10px;}
+  .cat-box{flex:1 1 300px;border:1.5px solid #cbd5e1;border-radius:10px;padding:10px 12px;box-sizing:border-box;background:#f0f9ff;}
+  .cat-box h4{margin:0 0 6px;font-size:14px;color:#075985;}
+  .cat-box ul{margin:4px 0 0;padding-left:18px;font-size:12.5px;line-height:1.65;}
+  .box{border:2px solid #0e7490;border-radius:10px;padding:10px;background:#ecfeff;box-sizing:border-box;font-size:13.5px;}
+  table{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:4px;}
+  th,td{border:1px solid #d1d5db;padding:4px 6px;text-align:center;}
+  th{background:#f3f4f6;}
+  .ok{background:#dcfce7;}
+  .warn{background:#fef9c3;}
+  .bad{background:#fee2e2;}
+  .note{font-size:12.5px;color:#6b7280;margin-top:6px;}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;text-align:center;}
+  .flow .step{flex:1 1 130px;border:1.5px solid #94a3b8;border-radius:8px;padding:8px;background:#ffffff;font-size:12.5px;}
+  .arrow{font-size:14px;color:#0e7490;font-weight:700;}
+</style>
+
+<div class="sec">
+  <div class="sec-title">本期论文 · A Survey on Coverage Path Planning for Robotics（Robotics and Autonomous Systems, 2013）<span class="tag">前沿·覆盖路径规划综述</span></div>
+  <div style="font-size:14px;line-height:1.8;">
+    Galceran &amp; Carreras（赫罗纳大学 CIRS）。<b>CPP = 找一条经过目标区域/体积所有点、同时避开障碍的路径</b>。距 Choset 2001 综述已十年，本文按底层思想重排分类框架，覆盖经典细胞分解→Morse→网格→3D→最优→不确定性→多机器人，附 Table 1 汇总表——该领域引用量最高的起点综述之一。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">问题：定义与相关难题</div>
+  <div class="cards">
+    <div class="card"><h4 style="color:#0e7490;">Cao et al. 1988 的 6 条要求</h4><ul><li>① 走遍目标区所有点</li><li>② 无重叠路径</li><li>③ 连续顺序、不重复</li><li>④ 避开障碍</li><li>⑤ 简单轨迹（直线/圆）</li><li>⑥ 最优路径（复杂环境常需取舍）</li></ul></div>
+    <div class="card"><h4 style="color:#b91c1c;">相关 NP-hard 问题</h4><ul><li>覆盖推销员问题（covering TSP）</li><li>lawnmower 问题：NP-hard</li><li>钢琴搬运问题：PSPACE-hard</li><li>艺术馆问题 / watchman route：NP-hard</li></ul></div>
+    <div class="card"><h4 style="color:#b91c1c;">十年无更新</h4><ul><li>上一综述：Choset 2001</li><li>本文补上近十年进展</li><li>目标：成为领域新研究者起点</li></ul></div>
+  </div>
+  <div class="footer-line" style="margin-top:8px;">应用场景：扫地机器人、喷漆机器人、AUV 水下测绘、扫雷、割草机、自动化收割、擦窗、船体/复杂结构检测。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">两个独立分类轴</div>
+  <div class="flow">
+    <div class="step"><b>完整性</b><br>启发式（随机化）<br>vs 完整（可证明全覆盖）</div>
+    <div class="arrow">×</div>
+    <div class="step"><b>信息</b><br>离线（环境已知）<br>vs 在线（传感器驱动）</div>
+  </div>
+  <div class="footer-line" style="margin-top:8px;">补充 Choset 2001 的分解类型分类：精确 / 半近似 / 近似（网格）。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">方法全景（按底层思想分类）</div>
+  <div class="cat">
+    <div class="cat-box"><h4>① 经典精确细胞分解（离线）</h4><ul><li><b>梯形分解</b>：平面多边形 → 梯形细胞 + 邻接图穷举遍历；细胞多→路径长</li><li><b>Boustrophedon（Choset &amp; Pignon 1997）</b>：只在临界点分细胞，减少细胞数→更短路径（"mowing the lawn" zigzag）</li></ul></div>
+    <div class="cat-box"><h4>② Morse 分解（Acar et al. 2002，在线）</h4><ul><li>基于 Morse 函数临界点；推广到非多边形障碍</li><li>可选不同 Morse 函数 → 螺旋等不同模式（利于有运动约束的车）</li><li>在线：Cycle 算法 + 距离传感器检测临界点，存 Reeb 图；不能处理直角环境</li><li>扩展：Morse + 广义 Voronoi 图（GVD）处理 extended-range 传感器</li></ul></div>
+    <div class="cat-box"><h4>③ 地标拓扑覆盖（Wong &amp; MacDonald 2003，在线）</h4><ul><li>自然事件地标：split / merge / lengthen / shorten / end</li><li>可处理多边形/椭圆/直角障碍，简单 zigzag 无需 retracing</li><li>有限状态机：boundary → normal → travel</li></ul></div>
+    <div class="cat-box"><h4>④ 接触传感器 CCR（Butler et al. 1999，在线）</h4><ul><li>仅接触传感、直角环境全覆盖；循环路径 + 事件触发分细胞</li><li>FSM 完备性证明</li></ul></div>
+    <div class="cat-box"><h4>⑤ 网格方法（近似分解，多数在线）</h4><ul><li><b>Wavefront</b>（Zelinsky 1993）：距离变换势场，可指定起终点</li><li><b>Spiral-STC</b>（Gabriely &amp; Rimon 2002）：生成树 + 螺旋，每格恰好一次，回起点；BSA 扩展覆盖部分占用格</li><li><b>神经网络</b>（Luo &amp; Yang 2002/2004）：shunting 方程，吸引未清洁区/排斥已清洁区，无需学习，可处理动态障碍</li><li><b>六边形网格</b>（Paull 2010/2012）：侧扫声呐 AUV 扫雷，信息增益最大化</li></ul></div>
+    <div class="cat-box"><h4>⑥ 图覆盖（Xu 2011）</h4><ul><li>街道/路网：处理不完整图、方向限制、在线重规划、多机器人</li></ul></div>
+    <div class="cat-box"><h4>⑦ 3D 覆盖</h4><ul><li>平面算法分层（Hert 1996，AUV 海底）、3D 细胞分解（Atkar 喷漆）、城市 UAV（Cheng 2008）、海底地形（Galceran 2013，等高线路径）、农田高程（Jin &amp; Tang 2011）</li><li><b>随机采样</b>（Englot &amp; Hover 2012，船体检测）：艺术馆问题 + TSP；差分约束版本（Papadopoulos 2013）概率渐近最优——复杂 3D 结构的 SOTA</li></ul></div>
+    <div class="cat-box"><h4>⑧ 最优覆盖（离线）</h4><ul><li>变扫掠方向减转向数（Huang 2001）、遗传算法（Jimenez 2007）、<b>中国邮递员问题欧拉回路</b>（Mannadiar &amp; Rekleitis 2010）、UAV 100km 实测（Xu 2011）</li></ul></div>
+    <div class="cat-box"><h4>⑨ 不确定性下的覆盖</h4><ul><li>沿细胞边界减航位误差（Acar &amp; Choset 2002b）、三机器人 leap-frog 互做信标（Tully 2010）、主动 SLAM（Kim 2012）、有界误差保证覆盖（Bretl &amp; Hutchinson 2013）、海洋测绘不确定性驱动（Galceran 2013）</li></ul></div>
+    <div class="cat-box"><h4>⑩ 多机器人覆盖</h4><ul><li>Boustrophedon explorer/coverer（Rekleitis 2009）、DCR overseer、MSTC 生成树（上界 8×最优）、神经网络、边界覆盖、蚁群/扩散生物启发、UAV 编队（整数规划/多边形分区/协商分区）</li></ul></div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">两类典型覆盖路径</div>
+  <div class="cards">
+    <div class="card"><h4 style="color:#0e7490;">zigzag「割草」路径</h4><ul><li>细胞覆盖默认模式，直线来回</li><li>控制简单、转弯少</li><li>路径短度与细胞数成正比</li></ul></div>
+    <div class="card"><h4 style="color:#0e7490;">螺旋路径</h4><ul><li>由 Morse 函数 h=√(x²+y²) 产生</li><li>适合欠驱动车类（难急转弯）</li><li>示例：Bosse et al. 2007</li></ul></div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">关键权衡与开放问题（2013 视角）</div>
+  <table>
+    <tr><th>方法族</th><th>优点</th><th>代价/局限</th></tr>
+    <tr><td>精确细胞分解</td><td class="ok">可证明全覆盖</td><td class="bad">离线、需环境已知、多边形限制</td></tr>
+    <tr><td>Morse 分解</td><td class="ok">非多边形障碍、多种模式</td><td class="bad">不能处理直角、Cycle 有 retracing</td></tr>
+    <tr><td>网格方法</td><td class="ok">易实现、应用最广</td><td class="bad">内存指数增长、依赖精确定位</td></tr>
+    <tr><td>随机采样 3D</td><td class="ok">复杂结构 SOTA（船体实测）</td><td class="bad">计算量大、需网格模型</td></tr>
+    <tr><td>随机化（Roomba 式）</td><td class="ok">无需定位/算力</td><td class="bad">大面积/水下/空中不可用</td></tr>
+  </table>
+  <div class="footer-line" style="margin-top:8px;"><b>开放问题</b>：① 概率采样方法推广到更复杂覆盖任务；② <b>把定位不确定性融入覆盖规划</b>（当时研究很少，至今仍是活跃方向）。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">推荐阅读顺序</div>
+  <div class="footer-line">
+    摘要+结论（全局）→ §2-3（梯形/Boustrophedon/Morse 分解，分类核心）→ §6（网格方法，最常见）→ §8（3D 覆盖）→ §9-10（最优/不确定性）→ §11（多机器人）→ Table 1 汇总表。
+  </div>
+</div>
+
+</div>
+</html>

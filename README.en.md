@@ -6,7 +6,7 @@
 > Each issue ships: a structured reading note (Markdown) + a paper structure diagram (HTML).
 
 ![Update](https://img.shields.io/badge/Update-every%202%20days-orange)
-![Papers](https://img.shields.io/badge/Papers-8-blue)
+![Papers](https://img.shields.io/badge/Papers-9-blue)
 ![Strategy](https://img.shields.io/badge/Strategy-survey%20first%2C%20then%20classics-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -22,6 +22,7 @@
 | 6 | Sequence to Sequence Learning with Neural Networks (Sutskever et al., NIPS 2014) | Classic · sequence | Classic | Done |
 | 7 | Neural Machine Translation by Jointly Learning to Align and Translate (Bahdanau et al., ICLR 2015) | Paradigm · Attention | Classic | Done |
 | 8 | Attention Is All You Need (Vaswani et al., NeurIPS 2017) | Paradigm · Transformer | Classic | Done |
+| 9 | A Survey on Coverage Path Planning for Robotics (Galceran & Carreras, RAS 2013) | Frontier · coverage path planning | Frontier | Done |
 
 > New issues are appended automatically.
 
@@ -45,7 +46,8 @@ Progression: survey first, then classics, then discovery tools.
 - [x] Classic: Seq2Seq (2014)
 - [x] Paradigm: Attention (Bahdanau 2015)
 - [x] Paradigm: Transformer (Attention Is All You Need, 2017)
-- [ ] Frontier: selected dynamically by research direction (coverage path planning / AI ethics / social media & wellbeing)
+- [x] Frontier: Coverage Path Planning (Survey, 2013)
+- [ ] Frontier: AI ethics / social media & wellbeing (to be selected)
 
 ## Topic Strategy
 
@@ -90,7 +92,8 @@ The **efficient-paper-reading** skill that powers this workflow is also open-sou
 │   ├── 05-LSTM-1997/
 │   ├── 06-Seq2Seq-2014/
 │   ├── 07-BahdanauAttention-2015/
-│   └── 08-Transformer-2017/
+│   ├── 08-Transformer-2017/
+│   └── 09-CPPSurvey-2013/
 └── skills/                 # bundled open-source skill
     └── efficient-paper-reading/
         ├── SKILL.md
