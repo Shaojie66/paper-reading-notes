@@ -6,7 +6,7 @@
 > 每期产出：结构化阅读笔记（Markdown）+ 论文结构示意图（HTML）。
 
 ![更新频率](https://img.shields.io/badge/%E6%9B%B4%E6%96%B0-%E6%AF%8F%E4%B8%A4%E5%A4%A9%E4%B8%80%E6%9C%9F-orange)
-![论文数量](https://img.shields.io/badge/%E8%AE%BA%E6%96%87-9%E7%AF%87-blue)
+![论文数量](https://img.shields.io/badge/%E8%AE%BA%E6%96%87-10%E7%AF%87-blue)
 ![选题策略](https://img.shields.io/badge/%E9%80%89%E9%A2%98-%E5%85%88%E7%BB%BC%E8%BF%B0%E5%90%8E%E7%BB%8F%E5%85%B8-brightgreen)
 ![开源协议](https://img.shields.io/badge/License-MIT-green)
 
@@ -23,6 +23,7 @@
 | 第 7 期 | Neural Machine Translation by Jointly Learning to Align and Translate（Bahdanau et al., ICLR 2015） | 范式·Attention | 经典 | 已完成 |
 | 第 8 期 | Attention Is All You Need（Vaswani et al., NeurIPS 2017） | 范式·Transformer | 经典 | 已完成 |
 | 第 9 期 | A Survey on Coverage Path Planning for Robotics（Galceran & Carreras, RAS 2013） | 前沿·覆盖路径规划 | 前沿 | 已完成 |
+| 第 10 期 | Media use and brain development during adolescence（Crone & Konijn, Nat Commun 2018） | 前沿·社交媒体与福祉 | 前沿 | 已完成 |
 
 > 后续每期生成后会自动追加本表。
 
@@ -47,7 +48,8 @@
 - [x] 范式：Attention（Bahdanau 2015）
 - [x] 范式：Transformer（Attention Is All You Need, 2017）
 - [x] 前沿：覆盖路径规划（Coverage Path Planning Survey, 2013）
-- [ ] 前沿：AI 伦理 / 社交媒体与福祉（待选题）
+- [x] 前沿：社交媒体与青少年福祉（Media & Brain Development, 2018）
+- [ ] 前沿：AI 伦理 / 监管（EU AI Act / Gender Shades，待选题）
 
 ## 选题策略
 
@@ -93,7 +95,8 @@
 │   ├── 06-Seq2Seq-2014/
 │   ├── 07-BahdanauAttention-2015/
 │   ├── 08-Transformer-2017/
-│   └── 09-CPPSurvey-2013/
+│   ├── 09-CPPSurvey-2013/
+│   └── 10-MediaBrain-2018/
 └── skills/                 # 配套开源 Skill
     └── efficient-paper-reading/
         ├── SKILL.md

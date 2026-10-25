@@ -6,7 +6,7 @@
 > Each issue ships: a structured reading note (Markdown) + a paper structure diagram (HTML).
 
 ![Update](https://img.shields.io/badge/Update-every%202%20days-orange)
-![Papers](https://img.shields.io/badge/Papers-9-blue)
+![Papers](https://img.shields.io/badge/Papers-10-blue)
 ![Strategy](https://img.shields.io/badge/Strategy-survey%20first%2C%20then%20classics-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -23,6 +23,7 @@
 | 7 | Neural Machine Translation by Jointly Learning to Align and Translate (Bahdanau et al., ICLR 2015) | Paradigm · Attention | Classic | Done |
 | 8 | Attention Is All You Need (Vaswani et al., NeurIPS 2017) | Paradigm · Transformer | Classic | Done |
 | 9 | A Survey on Coverage Path Planning for Robotics (Galceran & Carreras, RAS 2013) | Frontier · coverage path planning | Frontier | Done |
+| 10 | Media use and brain development during adolescence (Crone & Konijn, Nat Commun 2018) | Frontier · social media & wellbeing | Frontier | Done |
 
 > New issues are appended automatically.
 
@@ -47,7 +48,8 @@ Progression: survey first, then classics, then discovery tools.
 - [x] Paradigm: Attention (Bahdanau 2015)
 - [x] Paradigm: Transformer (Attention Is All You Need, 2017)
 - [x] Frontier: Coverage Path Planning (Survey, 2013)
-- [ ] Frontier: AI ethics / social media & wellbeing (to be selected)
+- [x] Frontier: Social media & youth wellbeing (Media & Brain Development, 2018)
+- [ ] Frontier: AI ethics / regulation (EU AI Act / Gender Shades, to be selected)
 
 ## Topic Strategy
 
@@ -93,7 +95,8 @@ The **efficient-paper-reading** skill that powers this workflow is also open-sou
 │   ├── 06-Seq2Seq-2014/
 │   ├── 07-BahdanauAttention-2015/
 │   ├── 08-Transformer-2017/
-│   └── 09-CPPSurvey-2013/
+│   ├── 09-CPPSurvey-2013/
+│   └── 10-MediaBrain-2018/
 └── skills/                 # bundled open-source skill
     └── efficient-paper-reading/
         ├── SKILL.md
