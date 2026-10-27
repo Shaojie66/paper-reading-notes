@@ -6,7 +6,7 @@
 > Each issue ships: a structured reading note (Markdown) + a paper structure diagram (HTML).
 
 ![Update](https://img.shields.io/badge/Update-every%202%20days-orange)
-![Papers](https://img.shields.io/badge/Papers-10-blue)
+![Papers](https://img.shields.io/badge/Papers-11-blue)
 ![Strategy](https://img.shields.io/badge/Strategy-survey%20first%2C%20then%20classics-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -24,6 +24,7 @@
 | 8 | Attention Is All You Need (Vaswani et al., NeurIPS 2017) | Paradigm · Transformer | Classic | Done |
 | 9 | A Survey on Coverage Path Planning for Robotics (Galceran & Carreras, RAS 2013) | Frontier · coverage path planning | Frontier | Done |
 | 10 | Media use and brain development during adolescence (Crone & Konijn, Nat Commun 2018) | Frontier · social media & wellbeing | Frontier | Done |
+| 11 | Gender Shades: Intersectional Accuracy Disparities in Commercial Gender Classification (Buolamwini & Gebru, FAT* 2018) | Frontier · AI ethics | Frontier | Done |
 
 > New issues are appended automatically.
 
@@ -49,7 +50,8 @@ Progression: survey first, then classics, then discovery tools.
 - [x] Paradigm: Transformer (Attention Is All You Need, 2017)
 - [x] Frontier: Coverage Path Planning (Survey, 2013)
 - [x] Frontier: Social media & youth wellbeing (Media & Brain Development, 2018)
-- [ ] Frontier: AI ethics / regulation (EU AI Act / Gender Shades, to be selected)
+- [x] Frontier: AI ethics / regulation (Gender Shades, FAT* 2018)
+- [ ] Frontier: AI regulation (EU AI Act, to be selected)
 
 ## Topic Strategy
 
@@ -96,7 +98,8 @@ The **efficient-paper-reading** skill that powers this workflow is also open-sou
 │   ├── 07-BahdanauAttention-2015/
 │   ├── 08-Transformer-2017/
 │   ├── 09-CPPSurvey-2013/
-│   └── 10-MediaBrain-2018/
+│   ├── 10-MediaBrain-2018/
+│   └── 11-GenderShades-2018/
 └── skills/                 # bundled open-source skill
     └── efficient-paper-reading/
         ├── SKILL.md

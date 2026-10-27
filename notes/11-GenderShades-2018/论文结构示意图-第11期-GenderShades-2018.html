@@ -1,0 +1,89 @@
+<html style="margin:0;padding:0;">
+<title>性别阴影（Gender Shades, FAT* 2018）结构与关键结果</title>
+<div style="width:100%;box-sizing:border-box;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:#f7f8fa;color:#1f2937;padding:20px 16px;">
+<style>
+  .sec{background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:14px;box-sizing:border-box;}
+  .sec-title{font-size:15px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .sec-title .tag{font-size:12px;font-weight:600;color:#ffffff;background:#0d9488;border-radius:4px;padding:1px 6px;}
+  .flow{display:flex;flex-wrap:wrap;align-items:stretch;justify-content:center;gap:8px;text-align:center;}
+  .flow .step{flex:1 1 170px;border:1.5px solid #94a3b8;border-radius:8px;padding:10px 8px;background:#ffffff;font-size:13px;box-sizing:border-box;}
+  .flow .step b{display:block;font-size:13.5px;margin-bottom:4px;}
+  .arrow{font-size:16px;color:#0d9488;font-weight:700;align-self:center;}
+  .cols{display:flex;flex-wrap:wrap;gap:12px;}
+  .col{flex:1 1 300px;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;box-sizing:border-box;background:#fafbff;}
+  .col h4{margin:0 0 8px;font-size:14.5px;}
+  .col ul{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.7;}
+  table{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:4px;}
+  th,td{border:1px solid #d1d5db;padding:5px 6px;text-align:center;}
+  th{background:#f3f4f6;}
+  .worst{background:#fee2e2;font-weight:700;}
+  .best{background:#dcfce7;font-weight:700;}
+  .note{font-size:12.5px;color:#6b7280;margin-top:6px;}
+  .bar{height:18px;border-radius:3px;display:inline-block;vertical-align:middle;}
+  .legend{font-size:12.5px;color:#374151;margin-top:8px;line-height:1.9;}
+  .footer-line{font-size:13.5px;color:#374151;line-height:1.75;}
+</style>
+
+<div class="sec">
+  <div class="sec-title">本期论文 · Gender Shades: Intersectional Accuracy Disparities in Commercial Gender Classification（FAT* 2018, PMLR 81:77-91）<span class="tag">前沿·AI 伦理 / 监管</span></div>
+  <div style="font-size:14px;line-height:1.8;">
+    Buolamwini（MIT Media Lab）&amp; Gebru（Microsoft Research）。<b>核心论点：单一准确率指标掩盖人群系统性偏差；必须按"性别 × 肤色"交叉分组评估商用分类器，并报告分组性能以实现透明度与问责。</b>产出 PPB 平衡基准 + 三个商业 API 的交叉性审计。AI 公平性方向被引最多的奠基实证。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">审计流程（两贡献）</div>
+  <div class="flow">
+    <div class="step"><b>① 审现有基准</b>IJB-A：79.6% 浅肤色<br>Adience：86.2% 浅肤色<br>浅肤男占比最高（59.4%）</div>
+    <div class="arrow">→</div>
+    <div class="step"><b>② 建 PPB 基准</b>1270 名议员（非洲 3 国 + 北欧 3 国）<br>Fitzpatrick I–VI 肤色标注（皮肤科医生定稿）<br>四组平衡：DF 21.3% / DM 25.0% / LF 23.3% / LM 30.3%</div>
+    <div class="arrow">→</div>
+    <div class="step"><b>③ 交叉性审计</b>Microsoft / IBM / Face++ 三个商用 API<br>TPR、错误率、PPV、FPR × 9 组分解<br>南非子集验证（排除图像质量混淆）</div>
+    <div class="arrow">→</div>
+    <div class="step"><b>④ 结论</b>深肤女错误率最高（20.8–34.7%）<br>浅肤男最低（0.0–0.8%）<br>呼吁分组性能报告（透明度 + 问责）</div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">关键结果：四组错误率对比（PPB 全量）</div>
+  <table>
+    <tr><th>分类器</th><th>总体</th><th>深肤女 DF</th><th>深肤男 DM</th><th>浅肤女 LF</th><th>浅肤男 LM</th></tr>
+    <tr><td>Microsoft</td><td>6.3%</td><td class="worst">20.8%</td><td>6.0%</td><td>1.7%</td><td class="best">0.0%</td></tr>
+    <tr><td>Face++</td><td>10.0%</td><td class="worst">34.5%</td><td class="best">0.7%</td><td>9.8%</td><td>0.8%</td></tr>
+    <tr><td>IBM</td><td>12.1%</td><td class="worst">34.7%</td><td>12.0%</td><td>7.1%</td><td class="best">0.3%</td></tr>
+  </table>
+  <div class="legend">
+    错误率（1-TPR）可视化：<br>
+    深肤女 <span class="bar" style="width:180px;background:#dc2626;"></span> 20.8%–34.7%（占 PPB 21.3% 却贡献 61.0%–72.4% 的总错误）<br>
+    深肤男 <span class="bar" style="width:60px;background:#f97316;"></span> 0.7%–12.0%<br>
+    浅肤女 <span class="bar" style="width:40px;background:#facc15;"></span> 1.7%–9.8%<br>
+    浅肤男 <span class="bar" style="width:6px;background:#22c55e;"></span> 0.0%–0.8%（占 30.3% 仅贡献 0.0%–2.4% 的错误）
+  </div>
+  <div class="note">注：数值取自论文 Table 4。最大组间错误率差距 34.4%（IBM 深肤女 vs Microsoft 浅肤男口径下最高差距）。总体准确率 87.9%–93.7% 掩盖了上述分化——"单一指标具欺骗性"是本文核心论点。</div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">关键发现与含义</div>
+  <div class="cols">
+    <div class="col"><h4 style="color:#0d9488;">三分类器一致规律</h4><ul><li>男性比女性准（错误率低 8.1%–20.6%）</li><li>浅肤色比深肤色准（低 11.8%–19.2%）</li><li>交叉后：深肤女最差、浅肤男最好（Face++ 例外：深肤男最好）</li><li>南非子集结论一致 → 非图像质量所致</li></ul></div>
+    <div class="col"><h4 style="color:#b45309;">不透明性</h4><ul><li>厂商不披露训练数据与分组性能</li><li>只给单一标签，不给概率/阈值，用户无法自选 TPR/FPR 权衡</li><li>性别标签二元化，不说明性别认同 vs 生理性别</li><li>IBM 置信度：浅肤近 1.0，深肤女降至 0.75–1</li></ul></div>
+    <div class="col"><h4 style="color:#be123c;">社会影响背景</h4><ul><li>1.17 亿美国人被纳入执法人脸网络</li><li>非洲裔更可能被拦停并接受人脸搜索（Garvie 2016）</li><li>误判可用于执法管线 → 错捕风险</li><li>医疗 AI（如皮肤癌检测）缺肤色标签即无法评估</li></ul></div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">局限与开放问题</div>
+  <div class="footer-line">
+    二元性别框架（不含跨性别）；Fitzpatrick 量表偏浅肤色、对深肤色光谱粗糙；深肤女误判的部分原因可能是与深肤色相关的面部几何/展示规范在训练数据中缺失（因果未定）；只测性别分类、受限图像；同意与救济机制未覆盖。后续：人脸检测/识别/验证的交叉性审计 + 非受限图像基准。
+  </div>
+</div>
+
+<div class="sec">
+  <div class="sec-title">阅读顺序</div>
+  <div class="footer-line">
+    摘要（全局）→ 引言（动机与缺口）→ §2 相关工作（LFW/IJB-A/Adience 偏倚、NIST/执法背景）→ §3 交叉性基准（PPB 设计 + 表 2/3）→ §4 商业分类器审计（表 4/5 关键结果）→ §4.5-4.7 分析（单一指标欺骗性、置信度、数据质量）→ 结论（透明度 + 问责定义）。
+  </div>
+</div>
+
+</div>
+</html>
