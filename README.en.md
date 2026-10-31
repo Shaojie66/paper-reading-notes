@@ -6,7 +6,7 @@
 > Each issue ships: a structured reading note (Markdown) + a paper structure diagram (HTML).
 
 ![Update](https://img.shields.io/badge/Update-every%202%20days-orange)
-![Papers](https://img.shields.io/badge/Papers-12-blue)
+![Papers](https://img.shields.io/badge/Papers-13-blue)
 ![Strategy](https://img.shields.io/badge/Strategy-survey%20first%2C%20then%20classics-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -26,6 +26,7 @@
 | 10 | Media use and brain development during adolescence (Crone & Konijn, Nat Commun 2018) | Frontier · social media & wellbeing | Frontier | Done |
 | 11 | Gender Shades: Intersectional Accuracy Disparities in Commercial Gender Classification (Buolamwini & Gebru, FAT* 2018) | Frontier · AI ethics | Frontier | Done |
 | 12 | Demystifying the Draft EU Artificial Intelligence Act (Veale & Borgesius, COMLAW 2021) | Frontier · AI regulation | Frontier | Done |
+| 13 | Learning Coverage Paths in Unknown Environments with Reinforcement Learning (Jonnarth et al., arXiv 2023) | Frontier · CPP × deep RL | Frontier | Done |
 
 > New issues are appended automatically.
 
@@ -53,6 +54,7 @@ Progression: survey first, then classics, then discovery tools.
 - [x] Frontier: Social media & youth wellbeing (Media & Brain Development, 2018)
 - [x] Frontier: AI ethics / regulation (Gender Shades, FAT* 2018)
 - [x] Frontier: AI regulation (EU AI Act, Veale & Borgesius 2021)
+- [x] Frontier: Coverage Path Planning × Deep RL (CPP with RL, Jonnarth et al. 2023)
 
 ## Topic Strategy
 
@@ -101,7 +103,8 @@ The **efficient-paper-reading** skill that powers this workflow is also open-sou
 │   ├── 09-CPPSurvey-2013/
 │   ├── 10-MediaBrain-2018/
 │   ├── 11-GenderShades-2018/
-│   └── 12-EUAIAct-2021/
+│   ├── 12-EUAIAct-2021/
+│   └── 13-CPPDRL-2023/
 └── skills/                 # bundled open-source skill
     └── efficient-paper-reading/
         ├── SKILL.md

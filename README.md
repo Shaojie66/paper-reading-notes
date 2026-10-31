@@ -6,7 +6,7 @@
 > 每期产出：结构化阅读笔记（Markdown）+ 论文结构示意图（HTML）。
 
 ![更新频率](https://img.shields.io/badge/%E6%9B%B4%E6%96%B0-%E6%AF%8F%E4%B8%A4%E5%A4%A9%E4%B8%80%E6%9C%9F-orange)
-![论文数量](https://img.shields.io/badge/%E8%AE%BA%E6%96%87-12%E7%AF%87-blue)
+![论文数量](https://img.shields.io/badge/%E8%AE%BA%E6%96%87-13%E7%AF%87-blue)
 ![选题策略](https://img.shields.io/badge/%E9%80%89%E9%A2%98-%E5%85%88%E7%BB%BC%E8%BF%B0%E5%90%8E%E7%BB%8F%E5%85%B8-brightgreen)
 ![开源协议](https://img.shields.io/badge/License-MIT-green)
 
@@ -26,6 +26,7 @@
 | 第 10 期 | Media use and brain development during adolescence（Crone & Konijn, Nat Commun 2018） | 前沿·社交媒体与福祉 | 前沿 | 已完成 |
 | 第 11 期 | Gender Shades: Intersectional Accuracy Disparities in Commercial Gender Classification（Buolamwini & Gebru, FAT* 2018） | 前沿·AI 伦理 | 前沿 | 已完成 |
 | 第 12 期 | Demystifying the Draft EU Artificial Intelligence Act（Veale & Borgesius, COMLAW 2021） | 前沿·AI 监管 | 前沿 | 已完成 |
+| 第 13 期 | Learning Coverage Paths in Unknown Environments with Reinforcement Learning（Jonnarth et al., arXiv 2023） | 前沿·CPP × 深度强化学习 | 前沿 | 已完成 |
 
 > 后续每期生成后会自动追加本表。
 
@@ -53,6 +54,7 @@
 - [x] 前沿：社交媒体与青少年福祉（Media & Brain Development, 2018）
 - [x] 前沿：AI 伦理 / 监管（Gender Shades, FAT* 2018）
 - [x] 前沿：AI 监管法规（EU AI Act, Veale & Borgesius 2021）
+- [x] 前沿：覆盖路径规划 × 深度强化学习（CPP with RL, Jonnarth et al. 2023）
 
 ## 选题策略
 
@@ -101,7 +103,8 @@
 │   ├── 09-CPPSurvey-2013/
 │   ├── 10-MediaBrain-2018/
 │   ├── 11-GenderShades-2018/
-│   └── 12-EUAIAct-2021/
+│   ├── 12-EUAIAct-2021/
+│   └── 13-CPPDRL-2023/
 └── skills/                 # 配套开源 Skill
     └── efficient-paper-reading/
         ├── SKILL.md
