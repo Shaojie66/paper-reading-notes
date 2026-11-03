@@ -2,7 +2,7 @@
 
 **English** | [中文](README.md)
 
-> A structured archive of paper reading notes from an AI MSc perspective — one paper every two days, automatically searched, read and pushed by a scheduled Doubao task.
+> A structured archive of paper reading notes from an AI learner's perspective — one paper every two days, automatically searched, read and pushed by a scheduled Doubao task.
 > Each issue ships: a structured reading note (Markdown) + a paper structure diagram (HTML).
 
 ![Update](https://img.shields.io/badge/Update-every%202%20days-orange)

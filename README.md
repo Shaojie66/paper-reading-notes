@@ -2,7 +2,7 @@
 
 **中文** | [English](README.en.md)
 
-> AI MSc 视角的结构化论文精读归档：每两天一篇，由豆包定时任务自动检索、精读并推送。
+> AI 学习视角的结构化论文精读归档：每两天一篇，由豆包定时任务自动检索、精读并推送。
 > 每期产出：结构化阅读笔记（Markdown）+ 论文结构示意图（HTML）。
 
 ![更新频率](https://img.shields.io/badge/%E6%9B%B4%E6%96%B0-%E6%AF%8F%E4%B8%A4%E5%A4%A9%E4%B8%80%E6%9C%9F-orange)
