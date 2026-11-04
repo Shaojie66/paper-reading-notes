@@ -1,0 +1,170 @@
+<html style="margin:0;padding:0;">
+<title>Vision Transformer（ViT）论文结构示意图</title>
+<div style="width:100%;box-sizing:border-box;margin:0;padding:24px 18px;background:#f4f6fb;font-family:-apple-system,'PingFang SC','Helvetica Neue',Arial,sans-serif;color:#1b2233;">
+
+  <div style="max-width:1160px;margin:0 auto;">
+
+    <div style="background:#fff;border-radius:16px;padding:20px 24px;box-shadow:0 6px 22px rgba(24,39,75,.07);border-left:6px solid #2f6df6;">
+      <div style="font-size:13px;letter-spacing:.08em;color:#2f6df6;font-weight:600;">PAPER 14 · ICLR 2021 · arXiv:2010.11929</div>
+      <h1 style="margin:8px 0 6px;font-size:26px;line-height:1.3;">An Image is Worth 16×16 Words：Vision Transformer</h1>
+      <div style="font-size:14px;color:#5b6478;line-height:1.6;">一张图切成 196 个 16×16 patch，当作“词”送进标准 Transformer；在 3 亿张图上预训练后，精度追平最强 CNN，算力只要 1/4。</div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:18px;margin-top:18px;align-items:flex-start;">
+
+      <div style="flex:1 1 560px;min-width:300px;background:#fff;border-radius:16px;padding:22px 24px;box-shadow:0 6px 22px rgba(24,39,75,.07);">
+        <div style="font-size:17px;font-weight:700;margin-bottom:4px;">模型流程：只改输入，不改架构</div>
+        <div style="font-size:13px;color:#7a8398;margin-bottom:18px;">除切 patch 与位置编码插值外，不向模型注入任何二维图像先验</div>
+
+        <div style="display:flex;flex-direction:column;gap:0;">
+
+          <div style="display:flex;gap:14px;align-items:flex-start;">
+            <div style="flex:0 0 30px;height:30px;border-radius:50%;background:#e8efff;color:#2f6df6;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;">1</div>
+            <div style="flex:1;padding-bottom:14px;border-bottom:1px dashed #dfe4ef;">
+              <div style="font-size:15px;font-weight:600;">输入图像 x ∈ R<sup>224×224×3</sup></div>
+              <div style="font-size:13px;color:#65708a;margin-top:4px;">切成 14×14 = 196 个 patch（每个 16×16×3 = 768 个原始数值）</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:14px;align-items:flex-start;padding-top:14px;">
+            <div style="flex:0 0 30px;height:30px;border-radius:50%;background:#e8efff;color:#2f6df6;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;">2</div>
+            <div style="flex:1;padding-bottom:14px;border-bottom:1px dashed #dfe4ef;">
+              <div style="font-size:15px;font-weight:600;">线性投影 E（768 → D）得到 patch embedding</div>
+              <div style="font-size:13px;color:#65708a;margin-top:4px;">等价于 kernel=16、stride=16 的卷积：每个 patch 变成一个 D 维向量，序列长度 N+1</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:14px;align-items:flex-start;padding-top:14px;">
+            <div style="flex:0 0 30px;height:30px;border-radius:50%;background:#e8efff;color:#2f6df6;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;">3</div>
+            <div style="flex:1;padding-bottom:14px;border-bottom:1px dashed #dfe4ef;">
+              <div style="font-size:15px;font-weight:600;">拼接 [CLS] token + 可学习 1D 位置编码</div>
+              <div style="font-size:13px;color:#65708a;margin-top:4px;">z₀ = [x_class; x¹E; …; xᴺE] + E_pos；[CLS] 的输出即整图表示</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:14px;align-items:flex-start;padding-top:14px;">
+            <div style="flex:0 0 30px;height:30px;border-radius:50%;background:#2f6df6;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;">4</div>
+            <div style="flex:1;padding-bottom:14px;">
+              <div style="font-size:15px;font-weight:600;">标准 Transformer Encoder × L（B:12 / L:24 / H:32 层）</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;">
+                <span style="font-size:12px;padding:6px 10px;border-radius:8px;background:#eef2f9;color:#3d465c;">LayerNorm</span>
+                <span style="color:#9aa4bb;">→</span>
+                <span style="font-size:12px;padding:6px 10px;border-radius:8px;background:#dbe7ff;color:#1f4fb8;font-weight:600;">Multi-Head Self-Attention（全局）</span>
+                <span style="color:#9aa4bb;">→</span>
+                <span style="font-size:12px;padding:6px 10px;border-radius:8px;background:#f0f3f9;color:#3d465c;">＋残差</span>
+                <span style="color:#9aa4bb;">→</span>
+                <span style="font-size:12px;padding:6px 10px;border-radius:8px;background:#eef2f9;color:#3d465c;">LayerNorm</span>
+                <span style="color:#9aa4bb;">→</span>
+                <span style="font-size:12px;padding:6px 10px;border-radius:8px;background:#ffe9d6;color:#a45b12;font-weight:600;">MLP（GELU，2 层）</span>
+                <span style="color:#9aa4bb;">→</span>
+                <span style="font-size:12px;padding:6px 10px;border-radius:8px;background:#f0f3f9;color:#3d465c;">＋残差</span>
+              </div>
+              <div style="font-size:13px;color:#65708a;margin-top:8px;">Pre-LN 结构，与 NLP 的 Transformer 完全一致，可直接复用高效实现</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:14px;align-items:flex-start;padding-top:6px;">
+            <div style="flex:0 0 30px;height:30px;border-radius:50%;background:#e8efff;color:#2f6df6;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;">5</div>
+            <div style="flex:1;">
+              <div style="font-size:15px;font-weight:600;">取 [CLS] 输出 → MLP Head → 1000 类</div>
+              <div style="font-size:13px;color:#65708a;margin-top:4px;">预训练用带隐藏层的 MLP；微调时换成零初始化单层线性头（可高分辨率微调，位置编码做二维插值）</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="margin-top:16px;padding:12px 14px;background:#fbfcff;border:1px solid #e5ebf6;border-radius:10px;font-size:13px;line-height:1.65;color:#42506b;">
+          <b style="color:#1b2233;">关键取舍</b>：CNN 每层自带局部性、二维邻域、平移等变；ViT 的自注意力层是<b>全局</b>的，空间关系必须从数据里学——这正是"小数据输、大数据赢"的根源。
+        </div>
+      </div>
+
+      <div style="flex:1 1 380px;min-width:280px;display:flex;flex-direction:column;gap:18px;">
+
+        <div style="background:#fff;border-radius:16px;padding:20px 22px;box-shadow:0 6px 22px rgba(24,39,75,.07);">
+          <div style="font-size:17px;font-weight:700;margin-bottom:14px;">关键数字</div>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;">
+            <div style="flex:1 1 130px;background:#f4f7fe;border-radius:10px;padding:12px;">
+              <div style="font-size:24px;font-weight:700;color:#2f6df6;">88.55%</div>
+              <div style="font-size:12px;color:#6a7489;margin-top:2px;">ImageNet top-1（ViT-H/14）</div>
+            </div>
+            <div style="flex:1 1 130px;background:#f4f7fe;border-radius:10px;padding:12px;">
+              <div style="font-size:24px;font-weight:700;color:#2f6df6;">94.55%</div>
+              <div style="font-size:12px;color:#6a7489;margin-top:2px;">CIFAR-100 top-1</div>
+            </div>
+            <div style="flex:1 1 130px;background:#f4f7fe;border-radius:10px;padding:12px;">
+              <div style="font-size:24px;font-weight:700;color:#2f6df6;">77.63%</div>
+              <div style="font-size:12px;color:#6a7489;margin-top:2px;">VTAB 19 任务均值</div>
+            </div>
+            <div style="flex:1 1 130px;background:#fff4f0;border-radius:10px;padding:12px;">
+              <div style="font-size:24px;font-weight:700;color:#d1653a;">2.5k</div>
+              <div style="font-size:12px;color:#8a6a5c;margin-top:2px;">TPUv3-core-days，约为 BiT-L 的 1/4</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border-radius:16px;padding:20px 22px;box-shadow:0 6px 22px rgba(24,39,75,.07);">
+          <div style="font-size:17px;font-weight:700;">同样精度，谁更贵？</div>
+          <div style="font-size:12px;color:#7a8398;margin:4px 0 16px;">预训练算力（TPUv3-core-days）与 ImageNet 精度（JFT-300M 预训练）</div>
+
+          <div style="font-size:12px;color:#4a5468;margin-bottom:6px;display:flex;justify-content:space-between;"><span>Noisy Student（EfficientNet-L2）</span><span style="font-weight:700;">88.5% · 12.3k</span></div>
+          <div style="height:16px;background:#eef1f7;border-radius:8px;margin-bottom:12px;"><div style="width:100%;height:16px;background:#c3ccdd;border-radius:8px;"></div></div>
+
+          <div style="font-size:12px;color:#4a5468;margin-bottom:6px;display:flex;justify-content:space-between;"><span>BiT-L（ResNet152×4）</span><span style="font-weight:700;">87.54% · 9.9k</span></div>
+          <div style="height:16px;background:#eef1f7;border-radius:8px;margin-bottom:12px;"><div style="width:80.5%;height:16px;background:#c3ccdd;border-radius:8px;"></div></div>
+
+          <div style="font-size:12px;color:#4a5468;margin-bottom:6px;display:flex;justify-content:space-between;"><span style="color:#1f4fb8;font-weight:700;">ViT-H/14（JFT）</span><span style="font-weight:700;">88.55% · 2.5k</span></div>
+          <div style="height:16px;background:#eef1f7;border-radius:8px;margin-bottom:12px;"><div style="width:20.3%;height:16px;background:#2f6df6;border-radius:8px;"></div></div>
+
+          <div style="font-size:12px;color:#4a5468;margin-bottom:6px;display:flex;justify-content:space-between;"><span style="color:#1f4fb8;font-weight:700;">ViT-L/16（JFT）</span><span style="font-weight:700;">87.76% · 0.68k</span></div>
+          <div style="height:16px;background:#eef1f7;border-radius:8px;"><div style="width:5.5%;height:16px;background:#6f9bff;border-radius:8px;"></div></div>
+
+          <div style="font-size:12px;color:#7a8398;margin-top:10px;line-height:1.6;">同等精度下，ViT 所需算力约为 ResNet 类模型的 1/2–1/4（Fig.5 的受控规模实验结论）。</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:18px;">
+
+      <div style="flex:1 1 520px;min-width:280px;background:#fff;border-radius:16px;padding:20px 22px;box-shadow:0 6px 22px rgba(24,39,75,.07);">
+        <div style="font-size:17px;font-weight:700;margin-bottom:14px;">数据规模决定输赢（核心实验）</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;">
+          <div style="flex:1 1 140px;background:#fdf1ee;border-radius:10px;padding:12px;">
+            <div style="font-size:12px;color:#a4583c;font-weight:700;">ImageNet · 1.3M</div>
+            <div style="font-size:13px;margin-top:8px;line-height:1.6;">ViT-L <b>输</b> 给 ViT-B<br>76.53 vs 77.91</div>
+            <div style="font-size:11px;color:#8a7a72;margin-top:6px;">小数据：卷积先验更省样本</div>
+          </div>
+          <div style="flex:1 1 140px;background:#fff8ea;border-radius:10px;padding:12px;">
+            <div style="font-size:12px;color:#9a6b1e;font-weight:700;">ImageNet-21k · 14M</div>
+            <div style="font-size:13px;margin-top:8px;line-height:1.6;">ViT-L ≈ ViT-B<br>85.15 vs 83.97</div>
+            <div style="font-size:11px;color:#8a7a72;margin-top:6px;">中等数据：差距开始拉开</div>
+          </div>
+          <div style="flex:1 1 140px;background:#eef5ff;border-radius:10px;padding:12px;">
+            <div style="font-size:12px;color:#2454b8;font-weight:700;">JFT-300M · 303M</div>
+            <div style="font-size:13px;margin-top:8px;line-height:1.6;">大模型 <b>全面胜出</b><br>ViT-H 88.55%</div>
+            <div style="font-size:11px;color:#5b6c8c;margin-top:6px;">大数据：从数据学先验更划算</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#7a8398;margin-top:12px;line-height:1.6;">随机子集实验（9M→300M）显示：ResNet 更早饱和，ViT 随数据持续上升——"数据规模战胜归纳偏置"。</div>
+      </div>
+
+      <div style="flex:1 1 380px;min-width:280px;background:#fff;border-radius:16px;padding:20px 22px;box-shadow:0 6px 22px rgba(24,39,75,.07);">
+        <div style="font-size:17px;font-weight:700;margin-bottom:12px;">边界与代价</div>
+        <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.85;color:#42506b;">
+          <li><b>数据门槛</b>：优势要 14M–300M 张图；JFT-300M 为内部数据，外部难完全复现</li>
+          <li><b>只做分类</b>：检测/分割未验证，密集预测对分辨率更敏感</li>
+          <li><b>O(N²) 注意力</b>：16×16 patch 尚可，高分辨率成本急升</li>
+          <li><b>先验靠手工注入</b>：1D 位置编码 + 换分辨率时二维插值</li>
+          <li><b>自监督偏弱</b>：掩码 patch 预测 79.9%，仍落后监督约 4 个点</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div style="margin-top:16px;text-align:center;font-size:11.5px;color:#9aa4bb;line-height:1.6;">
+      数据来源：Dosovitskiy et al., ICLR 2021（arXiv:2010.11929v2）Table 1–3、Fig.1–5、Appendix D。本图为结构示意，非论文原图。
+    </div>
+
+  </div>
+</div>
+</html>
