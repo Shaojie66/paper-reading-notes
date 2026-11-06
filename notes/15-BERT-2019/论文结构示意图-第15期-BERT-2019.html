@@ -176,7 +176,7 @@ li{margin-bottom:4px}
       <div class="pop" style="flex:1 1 300px;">
         <div style="font-size:13px;font-weight:600;color:#e8730c;margin-bottom:6px;">作者明确承认</div>
         <ul>
-          <li><b>预训练-微调错配</b>：[MASK] 微调时不出现；冻结特征 94.9 vs 微调 95.4</li>
+          <li><b>预训练-微调错配</b>：`[MASK]` 微调时不出现；冻结特征 94.9 vs 微调 95.4</li>
           <li><b>监督信号稀疏</b>：每步只预测 15% token，MLM 收敛慢于左→右，需更多步</li>
           <li><b>[CLS] 不是句向量</b>：不经微调无意义（脚注 6）</li>
           <li><b>Large 微调不稳</b>：小数据上要多次随机重启 + 用 dev 选模型</li>
