@@ -3,7 +3,7 @@
 > A structured archive of paper reading notes from an AI learner's perspective — one paper every two days, automatically searched, read and pushed by a scheduled Doubao task.
 > Each issue ships: a structured reading note (Markdown) + a paper structure diagram (HTML).
 ![Update](https://img.shields.io/badge/Update-every%202%20days-orange)
-![Papers](https://img.shields.io/badge/Papers-15-blue)
+![Papers](https://img.shields.io/badge/Papers-16-blue)
 ![Strategy](https://img.shields.io/badge/Strategy-survey%20first%2C%20then%20classics-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ## Contents
@@ -24,6 +24,7 @@
 | 13 | Learning Coverage Paths in Unknown Environments with Reinforcement Learning (Jonnarth et al., arXiv 2023) | Frontier · CPP × deep RL | Frontier | Done |
 | 14 | An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale (Dosovitskiy et al., ICLR 2021) | Frontier · vision Transformer | Frontier | Done |
 | 15 | BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding (Devlin et al., NAACL 2019) | Paradigm · pre-trained language model | Classic | Done |
+| 16 | Learning Transferable Visual Models From Natural Language Supervision (Radford et al., ICML 2021) | Paradigm · multimodal contrastive learning | Classic | Done |
 > New issues are appended automatically.
 ## Per-Issue Deliverables
 Inside `notes/<issue>-<paper-short-name>/`:
@@ -47,6 +48,7 @@ Progression: survey first, then classics, then discovery tools.
 - [x] Frontier: Coverage Path Planning × Deep RL (CPP with RL, Jonnarth et al. 2023)
 - [x] Frontier: Vision Transformer (ViT, ICLR 2021)
 - [x] Paradigm: Pre-trained language models (BERT, NAACL 2019)
+- [x] Paradigm: multimodal contrastive pre-training (CLIP, ICML 2021)
 ## Topic Strategy
 - Difficulty: starts from beginner-friendly papers and increases issue by issue;
 - Directions: deep learning fundamentals, coverage path planning for mobile robots, AI ethics & regulation, social media & youth wellbeing;
@@ -86,7 +88,8 @@ The **efficient-paper-reading** skill that powers this workflow is also open-sou
 │   ├── 12-EUAIAct-2021/
 │   ├── 13-CPPDRL-2023/
 │   ├── 14-ViT-2021/
-│   └── 15-BERT-2019/
+│   ├── 15-BERT-2019/
+│   └── 16-CLIP-2021/
 └── skills/                 # bundled open-source skill
     └── efficient-paper-reading/
         ├── SKILL.md

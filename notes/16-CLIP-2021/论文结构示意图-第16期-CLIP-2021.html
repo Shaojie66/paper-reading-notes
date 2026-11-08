@@ -1,0 +1,268 @@
+<html style="margin:0;padding:0;">
+<title>CLIP 论文结构示意图（对比预训练 + 零样本分类）</title>
+<div style="width:100%;box-sizing:border-box;margin:0;padding:20px 18px;background:#f7f8fa;color:#1b2733;font-family:-apple-system,'Segoe UI','PingFang SC','Hiragino Sans GB',sans-serif;line-height:1.6;font-size:15px;">
+
+<div style="max-width:1180px;margin:0 auto;">
+
+<div style="background:#fff;border-radius:12px;padding:18px 20px;border:1px solid #e3e7ec;">
+  <div style="font-size:13px;letter-spacing:.06em;color:#6b7a8c;text-transform:uppercase;">Issue 16 · ICML 2021 · arXiv:2103.00020</div>
+  <div style="font-size:25px;font-weight:700;margin:6px 0 8px;color:#0f1c2b;">CLIP：把「哪段文字配这张图」当成预训练任务</div>
+  <div style="color:#3c4a5a;">12× 训练效率 = 生成式目标（慢 3×）→ 袋词预测 → 对比目标（再快 4×）。4 亿图文对训完后，<b>文本编码器直接「编译」出一个分类器</b>，不做微调就能在 30+ 数据集上零样本迁移。</div>
+  <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">
+    <span style="background:#eef4ff;color:#1b4f9c;padding:4px 10px;border-radius:999px;font-size:13px;">图像编码器：ResNet-50 → RN50x64 ／ ViT-B/32 → ViT-L/14@336px</span>
+    <span style="background:#eef7f0;color:#1e6b3a;padding:4px 10px;border-radius:999px;font-size:13px;">文本编码器：63M / 12 层 / 512 宽 / 76 token</span>
+    <span style="background:#fff4e6;color:#8a4a00;padding:4px 10px;border-radius:999px;font-size:13px;">batch 32,768 · 32 epoch · 128 亿张图</span>
+  </div>
+</div>
+
+<!-- ① 动机 -->
+<div style="background:#fff;border-radius:12px;padding:18px 20px;border:1px solid #e3e7ec;margin-top:14px;">
+  <div style="font-weight:700;font-size:17px;color:#0f1c2b;">① 两条监督路线的差别：类别表 vs 语言</div>
+  <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;">
+    <div style="flex:1 1 300px;min-width:260px;background:#fdf6f6;border-left:4px solid #c9524a;border-radius:8px;padding:12px 14px;">
+      <div style="font-weight:600;color:#9c3b33;">固定类别监督（ImageNet / JFT）</div>
+      <div style="font-size:14px;color:#3c4a5a;margin-top:6px;">1,000 类 或 18,291 类 → 加一个新概念要<b>重新标注 + 重训</b>；输出是静态 softmax，长尾概念挤不进去。</div>
+    </div>
+    <div style="flex:1 1 300px;min-width:260px;background:#f3f8f5;border-left:4px solid #2f8a55;border-radius:8px;padding:12px 14px;">
+      <div style="font-weight:600;color:#1e6b3a;">自然语言监督（CLIP / WIT）</div>
+      <div style="font-size:14px;color:#3c4a5a;margin-top:6px;">4 亿图文对、50 万条 query → 加一个新概念只需<b>改写一句提示词</b>；开放词表，无需重训。</div>
+    </div>
+  </div>
+  <div style="margin-top:10px;font-size:14px;color:#5a6b7d;">前史并不缺想法：Mori 1999 图文检索、Joulin 2016 袋词预测、Li 2017 visual n-grams / VirTex / ICMLM / ConVIRT —— 但 Li 2017 的 ImageNet 零样本只有 <b>11.5%</b>（当时 SOTA 88.4%，传统 CV 方法都有 50%）。</div>
+</div>
+
+<!-- ② 三步流程 -->
+<div style="background:#fff;border-radius:12px;padding:18px 20px;border:1px solid #e3e7ec;margin-top:14px;">
+  <div style="font-weight:700;font-size:17px;color:#0f1c2b;">② 三步走：对比预训练 → 用文本造分类器 → 零样本预测</div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;align-items:stretch;">
+    <div style="flex:1 1 320px;min-width:280px;background:#fafbfc;border:1px solid #e6eaef;border-radius:10px;padding:14px;">
+      <div style="font-weight:600;color:#1b4f9c;font-size:14px;">Step 1 · 一个 batch 内做 1-of-N 匹配</div>
+      <div style="margin-top:10px;display:flex;gap:10px;align-items:center;">
+        <div style="font-size:13px;color:#5a6b7d;writing-mode:horizontal-tb;line-height:1.4;width:64px;">图像<br>I₁…I_N</div>
+        <div style="flex:1;">
+          <table style="border-collapse:collapse;width:100%;font-size:12px;color:#40506a;">
+            <tr>
+              <td style="padding:3px;border:1px solid #dfe5ec;background:#1b4f9c;color:#fff;text-align:center;">✔</td>
+              <td style="padding:3px;border:1px solid #dfe5ec;text-align:center;">·</td>
+              <td style="padding:3px;border:1px solid #dfe5ec;text-align:center;">·</td>
+              <td style="padding:3px;border:1px solid #dfe5ec;text-align:center;">·</td>
+            </tr>
+            <tr>
+              <td style="padding:3px;border:1px solid #dfe5ec;text-align:center;">·</td>
+              <td style="padding:3px;border:1px solid #dfe5ec;background:#1b4f9c;color:#fff;text-align:center;">✔</td>
+              <td style="padding:3px;border:1px solid #dfe5ec;text-align:center;">·</td>
+              <td style="padding:3px;border:1px solid #dfe5ec;text-align:center;">·</td>
+            </tr>
+            <tr>
+              <td style="padding:3px;border:1px solid #dfe5ec;text-align:center;">·</td>
+              <td style="padding:3px;border:1px solid #dfe5ec;text-align:center;">·</td>
+              <td style="padding:3px;border:1px solid #dfe5ec;background:#1b4f9c;color:#fff;text-align:center;">✔</td>
+              <td style="padding:3px;border:1px solid #dfe5ec;text-align:center;">·</td>
+            </tr>
+            <tr>
+              <td style="padding:3px;border:1px solid #dfe5ec;text-align:center;">·</td>
+              <td style="padding:3px;border:1px solid #dfe5ec;text-align:center;">·</td>
+              <td style="padding:3px;border:1px solid #dfe5ec;text-align:center;">·</td>
+              <td style="padding:3px;border:1px solid #dfe5ec;background:#1b4f9c;color:#fff;text-align:center;">✔</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div style="font-size:13px;color:#5a6b7d;margin-top:8px;text-align:right;">文本 T₁ … T_N（对角为真配对）</div>
+      <div style="font-size:13px;color:#3c4a5a;margin-top:6px;">相似度矩阵 <b>N×N</b>，正样本在对角线；行、列各算一次交叉熵取平均。温度 τ 可学习（初值 0.07）。</div>
+    </div>
+
+    <div style="flex:1 1 260px;min-width:240px;background:#fafbfc;border:1px solid #e6eaef;border-radius:10px;padding:14px;">
+      <div style="font-weight:600;color:#1e6b3a;font-size:14px;">Step 2 · 用类名造一个分类器</div>
+      <div style="margin-top:10px;font-size:14px;color:#3c4a5a;line-height:2;">
+        <span style="background:#eef7f0;border:1px solid #bcdcc7;border-radius:6px;padding:2px 8px;">"A photo of a <b>dog</b>."</span>
+      </div>
+      <div style="text-align:center;color:#94a3b3;font-size:18px;margin:2px 0;">↓ 文本编码器</div>
+      <div style="background:#eef7f0;border:1px dashed #7cb894;border-radius:6px;padding:8px;text-align:center;font-size:14px;color:#1e6b3a;font-weight:600;">T₁ T₂ … T_N &nbsp;（= 线性层权重）</div>
+      <div style="font-size:13px;color:#5a6b7d;margin-top:8px;">作者称文本编码器是<b>超网络</b>：它生成分类头的权重，而不是去拟合数据。</div>
+    </div>
+
+    <div style="flex:1 1 260px;min-width:240px;background:#fafbfc;border:1px solid #e6eaef;border-radius:10px;padding:14px;">
+      <div style="font-weight:600;color:#8a4a00;font-size:14px;">Step 3 · 零样本预测</div>
+      <div style="margin-top:10px;font-size:14px;color:#3c4a5a;">图像 → 图像编码器 → 与 T₁…T_N 逐个算余弦相似度 → 乘 τ → softmax → argmax。</div>
+      <div style="margin-top:10px;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6b7d;"><span style="width:56px;">"dog"</span><span style="flex:1;background:#e6eaef;height:10px;border-radius:5px;"><span style="display:block;width:92%;height:10px;background:#d98324;border-radius:5px;"></span></span><b style="color:#8a4a00;">0.71</b></div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6b7d;margin-top:5px;"><span style="width:56px;">"cat"</span><span style="flex:1;background:#e6eaef;height:10px;border-radius:5px;"><span style="display:block;width:20%;height:10px;background:#b0bcc9;border-radius:5px;"></span></span>0.15</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5a6b7d;margin-top:5px;"><span style="width:56px;">"car"</span><span style="flex:1;background:#e6eaef;height:10px;border-radius:5px;"><span style="display:block;width:12%;height:10px;background:#b0bcc9;border-radius:5px;"></span></span>0.09</div>
+      </div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:8px;">条形为打分示意，非实测数值。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 训练配方 -->
+<div style="background:#fff;border-radius:12px;padding:18px 20px;border:1px solid #e3e7ec;margin-top:14px;">
+  <div style="font-weight:700;font-size:17px;color:#0f1c2b;">③ 训练配方（极简：只要线性投影，没有投影头、没有文本增强）</div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;">
+    <div style="flex:1 1 170px;background:#fafbfc;border:1px solid #e6eaef;border-radius:8px;padding:10px 12px;"><div style="font-size:12px;color:#6b7a8c;">数据</div><div style="font-weight:700;color:#0f1c2b;">4 亿图文对</div><div style="font-size:13px;color:#5a6b7d;">WIT，50 万 query，每 query ≤2 万</div></div>
+    <div style="flex:1 1 170px;background:#fafbfc;border:1px solid #e6eaef;border-radius:8px;padding:10px 12px;"><div style="font-size:12px;color:#6b7a8c;">目标</div><div style="font-weight:700;color:#0f1c2b;">对称交叉熵</div><div style="font-size:13px;color:#5a6b7d;">InfoNCE / N-pair，N×N 相似度</div></div>
+    <div style="flex:1 1 170px;background:#fafbfc;border:1px solid #e6eaef;border-radius:8px;padding:10px 12px;"><div style="font-size:12px;color:#6b7a8c;">batch</div><div style="font-weight:700;color:#0f1c2b;">32,768</div><div style="font-size:13px;color:#5a6b7d;">相似度计算按 GPU 分片</div></div>
+    <div style="flex:1 1 170px;background:#fafbfc;border:1px solid #e6eaef;border-radius:8px;padding:10px 12px;"><div style="font-size:12px;color:#6b7a8c;">训练量</div><div style="font-weight:700;color:#0f1c2b;">32 epoch ≈ 128 亿图</div><div style="font-size:13px;color:#5a6b7d;">AdamW + cosine，混合精度</div></div>
+    <div style="flex:1 1 170px;background:#fafbfc;border:1px solid #e6eaef;border-radius:8px;padding:10px 12px;"><div style="font-size:12px;color:#6b7a8c;">算力</div><div style="font-weight:700;color:#0f1c2b;">592×V100 / 18 天</div><div style="font-size:13px;color:#5a6b7d;">RN50x64；ViT-L/14 为 256×V100 / 12 天</div></div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;">
+    <div style="flex:1 1 300px;background:#f5f8fc;border-left:3px solid #1b4f9c;border-radius:6px;padding:10px 12px;font-size:14px;color:#3c4a5a;"><b>图像侧</b>：ResNet-D 改进 + 抗锯齿模糊池化 + 把平均池化换成单层多头<b>注意力池化</b>；或 ViT（额外在 patch+位置嵌入后加一层 LayerNorm）。</div>
+    <div style="flex:1 1 300px;background:#f3f8f5;border-left:3px solid #2f8a55;border-radius:6px;padding:10px 12px;font-size:14px;color:#3c4a5a;"><b>文本侧</b>：63M / 12 层 / 512 宽 / 8 头，BPE 词表 49,152，最长 76 token，取 <code style="background:#eaf3ee;padding:0 3px;border-radius:3px;">[EOS]</code> 层归一化后线性投影。</div>
+  </div>
+</div>
+
+<!-- ④ 效率阶梯 -->
+<div style="background:#fff;border-radius:12px;padding:18px 20px;border:1px solid #e3e7ec;margin-top:14px;">
+  <div style="font-weight:700;font-size:17px;color:#0f1c2b;">④ 为什么是「对比」而不是「生成」：零样本学习速度的 12× 差</div>
+  <div style="margin-top:14px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <div style="width:170px;font-size:13px;color:#5a6b7d;">逐词生成 caption（VirTex 式）</div>
+      <div style="flex:1;background:#f1f3f6;height:18px;border-radius:4px;"><div style="width:8%;height:18px;background:#c9524a;border-radius:4px;"></div></div>
+      <div style="width:64px;font-size:13px;color:#9c3b33;font-weight:600;">0.33×</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <div style="width:170px;font-size:13px;color:#5a6b7d;">袋词预测（BoW 基线）</div>
+      <div style="flex:1;background:#f1f3f6;height:18px;border-radius:4px;"><div style="width:25%;height:18px;background:#b08954;border-radius:4px;"></div></div>
+      <div style="width:64px;font-size:13px;color:#8a6a3a;font-weight:600;">1×</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:170px;font-size:13px;color:#3c4a5a;font-weight:600;">对比目标（CLIP）</div>
+      <div style="flex:1;background:#f1f3f6;height:18px;border-radius:4px;"><div style="width:100%;height:18px;background:#1b4f9c;border-radius:4px;"></div></div>
+      <div style="width:64px;font-size:13px;color:#1b4f9c;font-weight:700;">4×</div>
+    </div>
+  </div>
+  <div style="margin-top:10px;font-size:13px;color:#94a3b8;">条长为相对效率示意（以袋词预测为 1×，读自原文 Fig.2：语言模型慢 3×、对比目标再快 4×，合计 12×）。</div>
+</div>
+
+<!-- ⑤ 结果 -->
+<div style="background:#fff;border-radius:12px;padding:18px 20px;border:1px solid #e3e7ec;margin-top:14px;">
+  <div style="font-weight:700;font-size:17px;color:#0f1c2b;">⑤ 结果：一个不做微调的模型，比 ResNet-50 的线性探针更常赢</div>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;">
+    <div style="flex:1 1 150px;min-width:140px;background:#f5f8fc;border:1px solid #dbe5f3;border-radius:10px;padding:12px;"><div style="font-size:12px;color:#6b7a8c;">ImageNet 零样本 top-1</div><div style="font-size:28px;font-weight:800;color:#1b4f9c;line-height:1.2;">76.2%</div><div style="font-size:12px;color:#5a6b7d;">top-5 95%；原版 ResNet-50 监督训练同水平；旧路线 11.5%</div></div>
+    <div style="flex:1 1 150px;min-width:140px;background:#f5f8fc;border:1px solid #dbe5f3;border-radius:10px;padding:12px;"><div style="font-size:12px;color:#6b7a8c;">vs ResNet-50 线性探针（27 数据集）</div><div style="font-size:28px;font-weight:800;color:#1b4f9c;line-height:1.2;">16 / 27</div><div style="font-size:12px;color:#5a6b7d;">零样本胜出</div></div>
+    <div style="flex:1 1 150px;min-width:140px;background:#f3f8f5;border:1px solid #cfe6d8;border-radius:10px;padding:12px;"><div style="font-size:12px;color:#6b7a8c;">vs EfficientNet-L2（27 数据集）</div><div style="font-size:28px;font-weight:800;color:#1e6b3a;line-height:1.2;">21 / 27</div><div style="font-size:12px;color:#5a6b7d;">线性探针特征更好；平均 +5%</div></div>
+    <div style="flex:1 1 150px;min-width:140px;background:#fffaf2;border:1px solid #f0dfc7;border-radius:10px;padding:12px;"><div style="font-size:12px;color:#6b7a8c;">STL-10（零样本）</div><div style="font-size:28px;font-weight:800;color:#8a4a00;line-height:1.2;">99.3%</div><div style="font-size:12px;color:#5a6b7d;">未用任何训练样本</div></div>
+    <div style="flex:1 1 150px;min-width:140px;background:#fafbfc;border:1px solid #e6eaef;border-radius:10px;padding:12px;"><div style="font-size:12px;color:#6b7a8c;">零样本↔线性探针相关性</div><div style="font-size:28px;font-weight:800;color:#3c4a5a;line-height:1.2;">r = 0.82</div><div style="font-size:12px;color:#5a6b7d;">但普遍低 10–25 点</div></div>
+  </div>
+  <div style="margin-top:12px;background:#fafbfc;border:1px dashed #d7dee6;border-radius:8px;padding:10px 12px;font-size:14px;color:#3c4a5a;">
+    <b>少样本对照</b>：零样本 ≈ 同特征空间的 <b>4-shot</b> 线性分类器，接近最好的 <b>16-shot</b> 模型；等价标注量中位 <b>5.4 个/类</b>（均值 20.8，跨 &lt;1 → 184）。但 Flowers102、EuroSAT 连 1-shot 都不如。
+  </div>
+</div>
+
+<!-- ⑥ 强弱项 -->
+<div style="background:#fff;border-radius:12px;padding:18px 20px;border:1px solid #e3e7ec;margin-top:14px;">
+  <div style="font-weight:700;font-size:17px;color:#0f1c2b;">⑥ 赢在哪、输在哪（相对 ResNet-50 线性探针的百分点差）</div>
+  <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;">
+    <div style="flex:1 1 420px;min-width:300px;">
+      <div style="font-size:14px;font-weight:600;color:#1e6b3a;margin-bottom:8px;">语义/场景/动作 → 语言监督更宽</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:13px;"><span style="width:96px;color:#3c4a5a;">StanfordCars</span><span style="flex:1;background:#f2f4f7;height:14px;border-radius:3px;"><span style="display:block;width:72%;height:14px;background:#2f8a55;border-radius:3px;"></span></span><b style="color:#1e6b3a;width:52px;">+28.9</b></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:13px;"><span style="width:96px;color:#3c4a5a;">Country211</span><span style="flex:1;background:#f2f4f7;height:14px;border-radius:3px;"><span style="display:block;width:58%;height:14px;background:#2f8a55;border-radius:3px;"></span></span><b style="color:#1e6b3a;width:52px;">+23.2</b></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:13px;"><span style="width:96px;color:#3c4a5a;">Food101</span><span style="flex:1;background:#f2f4f7;height:14px;border-radius:3px;"><span style="display:block;width:56%;height:14px;background:#2f8a55;border-radius:3px;"></span></span><b style="color:#1e6b3a;width:52px;">+22.5</b></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:13px;"><span style="width:96px;color:#3c4a5a;">Kinetics700</span><span style="flex:1;background:#f2f4f7;height:14px;border-radius:3px;"><span style="display:block;width:36%;height:14px;background:#2f8a55;border-radius:3px;"></span></span><b style="color:#1e6b3a;width:52px;">+14.5</b></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;"><span style="width:96px;color:#3c4a5a;">SST-2（OCR）</span><span style="flex:1;background:#f2f4f7;height:14px;border-radius:3px;"><span style="display:block;width:31%;height:14px;background:#2f8a55;border-radius:3px;"></span></span><b style="color:#1e6b3a;width:52px;">+12.4</b></div>
+    </div>
+    <div style="flex:1 1 420px;min-width:300px;">
+      <div style="font-size:14px;font-weight:600;color:#9c3b33;margin-bottom:8px;">专门/抽象/计数 → 近随机甚至崩</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:13px;"><span style="width:96px;color:#3c4a5a;">EuroSAT（卫星）</span><span style="flex:1;background:#f2f4f7;height:14px;border-radius:3px;"><span style="display:block;width:93%;height:14px;background:#c9524a;border-radius:3px;"></span></span><b style="color:#9c3b33;width:52px;">−37.1</b></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:13px;"><span style="width:96px;color:#3c4a5a;">KITTI 距离</span><span style="flex:1;background:#f2f4f7;height:14px;border-radius:3px;"><span style="display:block;width:85%;height:14px;background:#c9524a;border-radius:3px;"></span></span><b style="color:#9c3b33;width:52px;">−34.0</b></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:13px;"><span style="width:96px;color:#3c4a5a;">PCam（病理）</span><span style="flex:1;background:#f2f4f7;height:14px;border-radius:3px;"><span style="display:block;width:49%;height:14px;background:#c9524a;border-radius:3px;"></span></span><b style="color:#9c3b33;width:52px;">−19.5</b></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:13px;"><span style="width:96px;color:#3c4a5a;">GTSRB（限速牌）</span><span style="flex:1;background:#f2f4f7;height:14px;border-radius:3px;"><span style="display:block;width:46%;height:14px;background:#c9524a;border-radius:3px;"></span></span><b style="color:#9c3b33;width:52px;">−18.4</b></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;"><span style="width:96px;color:#3c4a5a;">CLEVR 计数</span><span style="flex:1;background:#f2f4f7;height:14px;border-radius:3px;"><span style="display:block;width:45%;height:14px;background:#c9524a;border-radius:3px;"></span></span><b style="color:#9c3b33;width:52px;">−18.2</b></div>
+    </div>
+  </div>
+  <div style="margin-top:8px;font-size:13px;color:#94a3b8;">条形长度按 ±40 点满刻示意；数值为原文 Fig.5 的差值读数。</div>
+</div>
+
+<!-- ⑦ 鲁棒性 -->
+<div style="background:#fff;border-radius:12px;padding:18px 20px;border:1px solid #e3e7ec;margin-top:14px;">
+  <div style="font-weight:700;font-size:17px;color:#0f1c2b;">⑦ 鲁棒性：零样本把「分布偏移鸿沟」最多缩小 75%，但一适配 ImageNet 就还回去</div>
+  <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;">
+    <div style="flex:1 1 300px;min-width:260px;background:#f5f8fc;border-left:4px solid #1b4f9c;border-radius:8px;padding:12px 14px;">
+      <div style="font-weight:600;color:#1b4f9c;">零样本 CLIP</div>
+      <div style="font-size:14px;color:#3c4a5a;margin-top:6px;">ImageNet-101 系监督模型在 7 个自然偏移集上错误率是验证集的 <b>5 倍</b>；CLIP 把这条鸿沟最多压缩 <b>75%</b>。少量样本（1–128 shot）也有增益，但随适配加深而消退。</div>
+    </div>
+    <div style="flex:1 1 300px;min-width:260px;background:#fdf6f6;border-left:4px solid #c9524a;border-radius:8px;padding:12px 14px;">
+      <div style="font-weight:600;color:#9c3b33;">在 CLIP 特征上适配 ImageNet</div>
+      <div style="font-size:14px;color:#3c4a5a;margin-top:6px;">ImageNet 精度 <b>+9.2%（85.4%）</b>，可偏移集平均不升反降——名义精度可能只是买了更贴合 ImageNet 的伪相关。</div>
+    </div>
+  </div>
+  <div style="margin-top:12px;background:#fafbfc;border:1px solid #e6eaef;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:13px;color:#5a6b7d;margin-bottom:8px;">适配后各数据集精度变化（百分点，零线 = 零样本基准）</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px 14px;">
+      <div style="flex:1 1 130px;font-size:13px;"><div style="display:flex;justify-content:space-between;color:#3c4a5a;"><span>ImageNetV2</span><b style="color:#1e6b3a;">+5.8</b></div><div style="background:#f2f4f7;height:10px;border-radius:3px;margin-top:3px;"><div style="width:58%;height:10px;background:#2f8a55;border-radius:3px;"></div></div></div>
+      <div style="flex:1 1 130px;font-size:13px;"><div style="display:flex;justify-content:space-between;color:#3c4a5a;"><span>YouTube-BB</span><b style="color:#1e6b3a;">+0.6</b></div><div style="background:#f2f4f7;height:10px;border-radius:3px;margin-top:3px;"><div style="width:6%;height:10px;background:#7cb894;border-radius:3px;"></div></div></div>
+      <div style="flex:1 1 130px;font-size:13px;"><div style="display:flex;justify-content:space-between;color:#3c4a5a;"><span>ImageNet-Vid</span><b style="color:#9c3b33;">−0.5</b></div><div style="background:#f2f4f7;height:10px;border-radius:3px;margin-top:3px;"><div style="width:5%;height:10px;background:#d08a84;border-radius:3px;"></div></div></div>
+      <div style="flex:1 1 130px;font-size:13px;"><div style="display:flex;justify-content:space-between;color:#3c4a5a;"><span>ImageNet-A</span><b style="color:#9c3b33;">−1.9</b></div><div style="background:#f2f4f7;height:10px;border-radius:3px;margin-top:3px;"><div style="width:19%;height:10px;background:#c9524a;border-radius:3px;"></div></div></div>
+      <div style="flex:1 1 130px;font-size:13px;"><div style="display:flex;justify-content:space-between;color:#3c4a5a;"><span>Sketch</span><b style="color:#9c3b33;">−2.8</b></div><div style="background:#f2f4f7;height:10px;border-radius:3px;margin-top:3px;"><div style="width:28%;height:10px;background:#c9524a;border-radius:3px;"></div></div></div>
+      <div style="flex:1 1 130px;font-size:13px;"><div style="display:flex;justify-content:space-between;color:#3c4a5a;"><span>ObjectNet</span><b style="color:#9c3b33;">−3.8</b></div><div style="background:#f2f4f7;height:10px;border-radius:3px;margin-top:3px;"><div style="width:38%;height:10px;background:#c9524a;border-radius:3px;"></div></div></div>
+      <div style="flex:1 1 130px;font-size:13px;"><div style="display:flex;justify-content:space-between;color:#3c4a5a;"><span>ImageNet-R</span><b style="color:#9c3b33;">−4.7</b></div><div style="background:#f2f4f7;height:10px;border-radius:3px;margin-top:3px;"><div style="width:47%;height:10px;background:#c9524a;border-radius:3px;"></div></div></div>
+    </div>
+    <div style="font-size:12px;color:#94a3b8;margin-top:8px;">条形按 ±6 点满刻示意（原文 Fig.14 右图读数）。</div>
+  </div>
+</div>
+
+<!-- ⑧ 偏见 -->
+<div style="background:#fff;border-radius:12px;padding:18px 20px;border:1px solid #e3e7ec;margin-top:14px;">
+  <div style="font-weight:700;font-size:17px;color:#0f1c2b;">⑧ 同一句提示词，不同的伤害：偏见与「类别设计」</div>
+  <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;">
+    <div style="flex:1 1 330px;min-width:280px;">
+      <div style="font-size:14px;font-weight:600;color:#3c4a5a;margin-bottom:8px;">FairFace 种族分类准确率（%）</div>
+      <div style="font-size:13px;color:#5a6b7d;margin-bottom:4px;">White 组</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:4px;"><span style="width:78px;color:#3c4a5a;">零样本 CLIP</span><span style="flex:1;background:#f2f4f7;height:12px;border-radius:3px;"><span style="display:block;width:58%;height:12px;background:#c9524a;border-radius:3px;"></span></span><b style="color:#9c3b33;width:44px;">58.3</b></div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:4px;"><span style="width:78px;color:#3c4a5a;">线性探针</span><span style="flex:1;background:#f2f4f7;height:12px;border-radius:3px;"><span style="display:block;width:93%;height:12px;background:#1b4f9c;border-radius:3px;"></span></span><b style="color:#1b4f9c;width:44px;">93.4</b></div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="width:78px;color:#3c4a5a;">FairFace 模型</span><span style="flex:1;background:#f2f4f7;height:12px;border-radius:3px;"><span style="display:block;width:94%;height:12px;background:#7d8fa3;border-radius:3px;"></span></span><b style="color:#3c4a5a;width:44px;">93.7</b></div>
+
+      <div style="font-size:13px;color:#5a6b7d;margin:10px 0 4px;">Non-White 组（方向反转）</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:4px;"><span style="width:78px;color:#3c4a5a;">零样本 CLIP</span><span style="flex:1;background:#f2f4f7;height:12px;border-radius:3px;"><span style="display:block;width:91%;height:12px;background:#2f8a55;border-radius:3px;"></span></span><b style="color:#1e6b3a;width:44px;">91.3</b></div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;"><span style="width:78px;color:#3c4a5a;">FairFace 模型</span><span style="flex:1;background:#f2f4f7;height:12px;border-radius:3px;"><span style="display:block;width:75%;height:12px;background:#b08954;border-radius:3px;"></span></span><b style="color:#8a6a3a;width:44px;">75.4</b></div>
+    </div>
+
+    <div style="flex:1 1 330px;min-width:280px;">
+      <div style="font-size:14px;font-weight:600;color:#3c4a5a;margin-bottom:8px;">加 3 个「犯罪」+ 4 个「非人」类目后，被误分进这些类的比例</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px;"><span style="width:112px;color:#3c4a5a;">Black 组 → 非人</span><span style="flex:1;background:#f2f4f7;height:13px;border-radius:3px;"><span style="display:block;width:70%;height:13px;background:#c9524a;border-radius:3px;"></span></span><b style="color:#9c3b33;width:56px;">≈14%</b></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px;"><span style="width:112px;color:#3c4a5a;">其他族裔 → 非人</span><span style="flex:1;background:#f2f4f7;height:13px;border-radius:3px;"><span style="display:block;width:35%;height:13px;background:#b08954;border-radius:3px;"></span></span><b style="color:#8a6a3a;width:56px;">&lt;8%</b></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px;"><span style="width:112px;color:#3c4a5a;">男性 → 犯罪类</span><span style="flex:1;background:#f2f4f7;height:13px;border-radius:3px;"><span style="display:block;width:82%;height:13px;background:#c9524a;border-radius:3px;"></span></span><b style="color:#9c3b33;width:56px;">16.5%</b></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px;"><span style="width:112px;color:#3c4a5a;">女性 → 犯罪类</span><span style="flex:1;background:#f2f4f7;height:13px;border-radius:3px;"><span style="display:block;width:49%;height:13px;background:#b08954;border-radius:3px;"></span></span><b style="color:#8a6a3a;width:56px;">9.8%</b></div>
+    </div>
+
+    <div style="flex:1 1 330px;min-width:280px;background:#fffaf2;border-left:4px solid #d98324;border-radius:8px;padding:12px 14px;">
+      <div style="font-weight:600;color:#8a4a00;">类别设计本身就是干预手段</div>
+      <div style="font-size:14px;color:#3c4a5a;margin-top:6px;">类目表里加一个 <code style="background:#ffe9c9;padding:0 3px;border-radius:3px;">child</code>，0–2 岁被分进犯罪/非人类别从 <b>30.3%</b> 掉到 <b>2.3%</b>。</div>
+      <div style="font-size:14px;color:#3c4a5a;margin-top:8px;">CCTV 粗分类：正常 <b>91.8%</b>，但在类别集里放一个「很像」的干扰项后跌到 <b>51.1%</b>（40.7% 选了干扰项）。</div>
+      <div style="font-size:14px;color:#3c4a5a;margin-top:8px;">CelebA 零样本人脸识别：100 类 <b>59.2%</b>，1k 类 43.3%，2k 类 42.2%。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑨ 代价 -->
+<div style="background:#fff;border-radius:12px;padding:18px 20px;border:1px solid #e3e7ec;margin-top:14px;">
+  <div style="font-weight:700;font-size:17px;color:#0f1c2b;">⑨ 代价与边界：作者自己承认的五条</div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;">
+    <div style="flex:1 1 200px;background:#fdf6f6;border-radius:8px;padding:10px 12px;font-size:14px;color:#3c4a5a;"><b style="color:#9c3b33;">算力</b><br>追平整体 SOTA 还需约 <b>1000×</b> 计算，现行硬件不可行。</div>
+    <div style="flex:1 1 200px;background:#fdf6f6;border-radius:8px;padding:10px 12px;font-size:14px;color:#3c4a5a;"><b style="color:#9c3b33;">OOD 依旧脆</b><br>MNIST 仅 <b>88%</b>，输给原始像素 + 逻辑回归；以「数据够大即同分布」为赌注。</div>
+    <div style="flex:1 1 200px;background:#fdf6f6;border-radius:8px;padding:10px 12px;font-size:14px;color:#3c4a5a;"><b style="color:#9c3b33;">数据效率没修</b><br>128 亿张图，按 1 张/秒要 <b>405 年</b>。</div>
+    <div style="flex:1 1 200px;background:#fdf6f6;border-radius:8px;padding:10px 12px;font-size:14px;color:#3c4a5a;"><b style="color:#9c3b33;">只能选不能生成</b><br>输出被限定在给定类别集内；对比 + 生成联合训练留作未来工作。</div>
+    <div style="flex:1 1 200px;background:#fdf6f6;border-radius:8px;padding:10px 12px;font-size:14px;color:#3c4a5a;"><b style="color:#9c3b33;">评测口径有瑕疵</b><br>反复看完整验证集；27 个数据集与模型能力共同演化；零样本→少样本会掉点。</div>
+  </div>
+
+  <div style="margin-top:14px;background:#fafbfc;border:1px dashed #d7dee6;border-radius:10px;padding:12px 14px;">
+    <div style="font-size:13px;font-weight:600;color:#3c4a5a;margin-bottom:8px;">在本期序列里的位置</div>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:14px;">
+      <span style="background:#eef4ff;color:#1b4f9c;border-radius:6px;padding:4px 10px;">第 08 期 Transformer</span>
+      <span style="color:#94a3b8;">→</span>
+      <span style="background:#eef4ff;color:#1b4f9c;border-radius:6px;padding:4px 10px;">第 14 期 ViT（视觉编码器）</span>
+      <span style="color:#94a3b8;">+</span>
+      <span style="background:#f3f8f5;color:#1e6b3a;border-radius:6px;padding:4px 10px;">第 15 期 BERT（语言编码器）</span>
+      <span style="color:#94a3b8;">→</span>
+      <span style="background:#fff4e6;color:#8a4a00;border-radius:6px;padding:4px 10px;font-weight:600;">第 16 期 CLIP：用对比学习把两塔对齐</span>
+    </div>
+    <div style="font-size:13px;color:#5a6b7d;margin-top:8px;">与第 11 期 Gender Shades 直接呼应：CLIP 的偏见探针沿用了 Buolamwini &amp; Gebru 的交叉群体方法，并进一步证明「类别怎么定义」本身就会改变伤害分布。</div>
+  </div>
+</div>
+
+<div style="text-align:center;font-size:12px;color:#94a3b8;margin:16px 0 4px;">数据出处：Radford et al., ICML 2021（PMLR 139:8748–8763），arXiv:2103.00020v1 正文与 Fig.1–18、Table 1–8；条形/刻度凡标注「示意」者不表示精确测量。</div>
+
+</div>
+</div>
+</html>
