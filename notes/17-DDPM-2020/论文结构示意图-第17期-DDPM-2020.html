@@ -1,0 +1,209 @@
+<html style="margin:0;padding:0;">
+<title>DDPM（NeurIPS 2020）论文结构示意图 · 第17期</title>
+<style>
+  :root{
+    --ink:#1b1d1f; --sub:#5b6167; --line:#dcdcd8; --bg:#f7f7f4; --card:#ffffff;
+    --blue:#2f6fb0; --red:#c2483d; --green:#3f7d55; --amber:#b07a2f; --violet:#6a5a9e;
+  }
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{width:100%;max-width:1060px;margin:0 auto;padding:22px 18px 34px;box-sizing:border-box;}
+  .head{border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:18px;}
+  .head h1{font-size:24px;line-height:1.35;margin:0 0 6px;letter-spacing:.2px;}
+  .head .meta{font-size:13.5px;color:var(--sub);line-height:1.6;}
+  .seq{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:10px;padding:2px 8px;margin-right:6px;color:var(--sub);background:#fff;}
+  section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:0 0 14px;}
+  .shead{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;}
+  .num{font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:4px;padding:2px 7px;letter-spacing:.5px;flex:none;}
+  .shead h2{font-size:16px;margin:0;line-height:1.4;}
+  .shead .tag{font-size:12px;color:var(--sub);margin-left:auto;flex:none;}
+  p{margin:0 0 8px;font-size:14.5px;line-height:1.75;}
+  .lead{font-size:14.5px;line-height:1.75;}
+  .muted{color:var(--sub);}
+  .formula{font-family:"SFMono-Regular",Menlo,Consolas,monospace;font-size:13px;background:#f2f3ef;
+    border-left:3px solid var(--blue);padding:9px 11px;border-radius:0 6px 6px 0;margin:8px 0;line-height:1.7;overflow-x:auto;}
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 4px;}
+  .node{flex:0 0 auto;border:1px solid var(--line);border-radius:7px;padding:7px 10px;min-width:74px;text-align:center;background:#fff;}
+  .node b{display:block;font-size:13.5px;}
+  .node span{display:block;font-size:11.5px;color:var(--sub);margin-top:2px;}
+  .arrow{flex:0 0 auto;font-size:15px;color:var(--sub);}
+  .down{color:var(--green);}
+  .up{color:var(--red);}
+  .tworow{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
+  .hint{font-size:12.5px;color:var(--sub);margin-top:8px;line-height:1.65;}
+  .bars{margin-top:6px;}
+  .row{display:flex;align-items:center;gap:8px;margin:5px 0;}
+  .rl{flex:0 0 176px;font-size:12.5px;color:var(--sub);text-align:right;}
+  .track{flex:1 1 200px;height:14px;background:#eef0ec;border-radius:7px;position:relative;overflow:hidden;}
+  .fill{height:14px;border-radius:7px;}
+  .rv{flex:0 0 56px;font-size:12.5px;color:var(--sub);}
+  .ours .rl{color:var(--ink);font-weight:600;}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px;}
+  th,td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top;}
+  th{color:var(--sub);font-weight:600;font-size:12.5px;}
+  td.num-t{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  tr.hl td{background:#f3f7fb;font-weight:600;}
+  .grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
+  .card{flex:1 1 220px;min-width:200px;border:1px solid var(--line);border-radius:8px;padding:10px 11px;background:#fcfcfa;}
+  .card h3{margin:0 0 5px;font-size:13.5px;}
+  .card p{font-size:13px;line-height:1.65;margin:0;color:var(--sub);}
+  .rd{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .rdstep{flex:1 1 130px;min-width:120px;border:1px solid var(--line);border-radius:8px;padding:8px 9px;background:#fbfbf8;}
+  .rdstep b{font-size:12.5px;display:block;}
+  .rdstep span{font-size:12px;color:var(--sub);display:block;margin-top:3px;line-height:1.5;}
+  .limit{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+  .limit div{flex:1 1 300px;font-size:13px;line-height:1.65;border-left:3px solid var(--amber);padding:4px 0 4px 9px;background:#fdfbf6;}
+  .tl{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:stretch;}
+  .tli{flex:1 1 96px;min-width:88px;border:1px solid var(--line);border-radius:8px;padding:7px 8px;}
+  .tli b{font-size:12px;display:block;}
+  .tli span{font-size:11.5px;color:var(--sub);display:block;margin-top:2px;}
+  .tli.now{border:2px solid var(--ink);background:#fff;box-shadow:0 1px 0 #eee;}
+  .foot{font-size:12px;color:var(--sub);line-height:1.7;border-top:1px solid var(--line);padding-top:10px;}
+  .pill{display:inline-block;font-size:11.5px;border-radius:12px;padding:1px 8px;margin:0 2px 2px 0;background:#eef1f6;color:#37507a;}
+</style>
+<div class="wrap">
+
+  <div class="head">
+    <div class="seq">第 17 期 · 范式·生成模型</div><div class="seq">难度：中级</div><div class="seq">NeurIPS 2020</div>
+    <h1>Denoising Diffusion Probabilistic Models（DDPM）</h1>
+    <div class="meta">Jonathan Ho · Ajay Jain · Pieter Abbeel（UC Berkeley）｜NeurIPS 2020, pp. 6840–6851｜arXiv:2006.11239v2<br>
+    示意图为阅读笔记的图解版，数字均取自论文 Table 1–4 与附录 B；非官方结构图。</div>
+  </div>
+
+  <section>
+    <div class="shead"><span class="num">01</span><h2>它要回答的质疑：这套理论优雅的模型，能出好图吗？</h2><span class="tag">问题</span></div>
+    <p class="lead">扩散模型（Sohl-Dickstein 2015）定义清楚、训练稳定，能算精确似然，但五年间从未有人证明它能生成<strong>高质量</strong>样本——原版在 CIFAR-10 上 Inception Score 仅 ≤5.40。同期 GAN 与自回归各占一头。</p>
+    <div class="bars">
+      <div class="row"><div class="rl">StyleGAN2 + ADA（GAN）</div><div class="track"><div class="fill" style="width:8.6%;background:var(--amber);"></div></div><div class="rv">FID 3.26</div></div>
+      <div class="row"><div class="rl">SNGAN</div><div class="track"><div class="fill" style="width:57.7%;background:#9aa6b2;"></div></div><div class="rv">21.7</div></div>
+      <div class="row"><div class="rl">NCSN（score matching）</div><div class="track"><div class="fill" style="width:64.8%;background:#9aa6b2;"></div></div><div class="rv">25.32</div></div>
+      <div class="row"><div class="rl">Gated PixelCNN（自回归）</div><div class="track"><div class="fill" style="width:100%;background:#cdd5dd;"></div></div><div class="rv">65.93</div></div>
+      <div class="row"><div class="rl muted">Diffusion（2015 原版）</div><div class="track"><div class="fill" style="width:9.5%;background:#e3d5c2;"></div></div><div class="rv">IS ≤5.40</div></div>
+    </div>
+    <p class="hint">条形按 FID 归一化（最长 = PixelCNN 65.93）；最末一行为 Inception Score，仅表示「质量不足」，不可与 FID 直接比较。</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">02</span><h2>两条链：固定加噪的前向 q，学出来的反向 p<sub>θ</sub></h2><span class="tag">方法·骨架</span></div>
+    <div class="chain">
+      <div class="node"><b>x₀</b><span>真实图</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><b>x₁</b><span>微噪</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><b>…</b><span>逐步加噪</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><b>x<sub>t-1</sub></b><span>ᾱ 递减</span></div>
+      <div class="arrow">→</div>
+      <div class="node"><b>x<sub>t</sub></b><span>ᾱ 递减</span></div>
+      <div class="arrow">→</div>
+      <div class="node" style="border-color:#c2483d;"><b>x<sub>T</sub></b><span>≈ 纯噪声</span></div>
+    </div>
+    <div class="chain"><div class="arrow down">↓ 前向 q：无参数，T = 1000，β 从 1e-4 线性升到 0.02，末端 D<sub>KL</sub> ≈ 1e-5 bits/dim</div></div>
+    <div class="chain"><div class="arrow up">↑ 反向 p<sub>θ</sub>：从 N(0, I) 出发，每步由 U-Net 预测噪声并去掉一点</div></div>
+    <div class="formula">q(x_t | x_{t-1}) = N( x_t ; √(1-β_t)·x_{t-1} , β_t I )      ← 前向（固定）<br>
+q(x_t | x_0)   = N( x_t ; √ᾱ_t·x_0 , (1-ᾱ_t) I )          ← 任意 t 可闭式直采（训练的前提）<br>
+p_θ(x_{t-1} | x_t) = N( x_{t-1} ; μ_θ(x_t, t) , σ_t² I )    ← 反向（只学均值，方差固定）</div>
+    <p class="hint">关键在第二行：训练时随机取 t 就能一步得到 x<sub>t</sub>，不必真的展开 t 步链——这是「可训练」而非「只能空想」的技术前提。</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">03</span><h2>训练循环只有一句话：让它把刚加进去的噪声猜回来</h2><span class="tag">方法·核心</span></div>
+    <div class="grid">
+      <div class="card"><h3>① 采一张图 x₀</h3><p>随机取样本，线性缩放到 [-1, 1]，保证与 N(0, I) 先验同尺度。</p></div>
+      <div class="card"><h3>② 随机取 t、随机取 ε</h3><p>t ~ U{1…1000}，ε ~ N(0, I)。一步合成加噪图，无需求解链。</p></div>
+      <div class="card"><h3>③ 让网络回归 ε</h3><p>输入 √ᾱ<sub>t</sub>x₀ + √(1-ᾱ<sub>t</sub>)ε 与时间 t，输出「我认为加了多少噪声」。</p></div>
+      <div class="card"><h3>④ 一次梯度步</h3><p>整个训练只有一次前向一次反向，不展开 1000 步——比自回归逐像素便宜。</p></div>
+    </div>
+    <div class="formula">L_simple(θ) = E_{t,x₀,ε} ‖ ε − ε_θ( √ᾱ_t·x₀ + √(1-ᾱ_t)·ε , t ) ‖²</div>
+    <p class="hint">相比标准变分下界，L_simple 丢掉了 1/σ<sub>t</sub>² 的权重：小 t（噪声弱、任务易）的项被自动降权，梯度集中到大 t 的难例。作者把这个「副作用」当作正向收益，实验也确实更好。</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">04</span><h2>三种等价的输出目标，效果差 4 倍</h2><span class="tag">方法·消融</span></div>
+    <p class="lead">预测后验均值 μ̃、预测噪声 ε、预测原图 x₀，在数学上都只是 p<sub>θ</sub>(x<sub>t-1</sub>|x<sub>t</sub>) 的不同重参数化；但在同一 U-Net、同一数据下，优化难度完全不同。</p>
+    <table>
+      <tr><th>输出目标</th><th>损失</th><th class="num-t">IS ↑</th><th class="num-t">FID ↓</th><th>结论</th></tr>
+      <tr><td>μ̃（后验均值）</td><td>完整变分下界 L</td><td class="num-t">7.28</td><td class="num-t">23.69</td><td>可用，但差</td></tr>
+      <tr><td>μ̃</td><td>无权重 MSE</td><td class="num-t">—</td><td class="num-t">—</td><td>训练不稳</td></tr>
+      <tr><td>ε（噪声）</td><td>完整变分下界 L</td><td class="num-t">7.67</td><td class="num-t">13.51</td><td>与 μ̃ 持平</td></tr>
+      <tr><td>ε</td><td>L_simple（去权重）</td><td class="num-t">9.46</td><td class="num-t">3.17</td><td>最好</td></tr>
+      <tr><td>x₀（原图）</td><td>—</td><td class="num-t">—</td><td class="num-t">—</td><td>作者称早期质量更差</td></tr>
+    </table>
+    <p class="hint">同一架构下 FID 23.69 → 13.51 → 3.17：收益来自<strong>目标函数与参数化的配合</strong>，不是加模块、不是加算力。学习对角方差 Σ<sub>θ</sub> 的两行均训崩，所以方差只能固定。</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">05</span><h2>CIFAR-10 结果：无条件扩散首次在 FID 上超过 GAN</h2><span class="tag">效果</span></div>
+    <div class="bars">
+      <div class="row ours"><div class="rl">Ours（L_simple）</div><div class="track"><div class="fill" style="width:100%;background:var(--green);"></div></div><div class="rv">3.17</div></div>
+      <div class="row"><div class="rl">StyleGAN2 + ADA</div><div class="track"><div class="fill" style="width:97%;background:#9aa6b2;"></div></div><div class="rv">3.26</div></div>
+      <div class="row"><div class="rl">Ours（L，固定方差）</div><div class="track"><div class="fill" style="width:41%;background:#a9c6b4;"></div></div><div class="rv">13.51</div></div>
+      <div class="row"><div class="rl">BigGAN（条件）</div><div class="track"><div class="fill" style="width:32%;background:#cdd5dd;"></div></div><div class="rv">14.73</div></div>
+      <div class="row"><div class="rl">SNGAN-DDLS</div><div class="track"><div class="fill" style="width:34%;background:#cdd5dd;"></div></div><div class="rv">15.42</div></div>
+      <div class="row"><div class="rl">NCSN</div><div class="track"><div class="fill" style="width:70%;background:#cdd5dd;"></div></div><div class="rv">25.32</div></div>
+    </div>
+    <div class="formula">FID 3.17（对训练集口径）｜测试集口径 5.24｜IS 9.46（StyleGAN2+ADA 为 9.74）｜NLL ≤3.75 bits/dim（PixelCNN 3.03、Sparse Transformer 2.80）</div>
+    <p class="hint">条形按 FID 归一化，3.17 为基准 100%。<strong>注意口径</strong>：主表 FID 按领域惯例对训练集计算，作者另报测试集 5.24；似然则明显落后于自回归模型——样本质量与似然在这篇里是两条独立结论。</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">06</span><h2>它把采样过程读成了「渐进有损压缩」</h2><span class="tag">解释</span></div>
+    <p class="lead">把 L₁+…+L<sub>T</sub> 当码率、L₀ 当失真：最好的 CIFAR 模型 rate 1.78 bits/dim、distortion 1.97 bits/dim（RMSE 0.95 / 255）。率-失真曲线的形状说明——<strong>一半以上码长花在人眼看不见的细节上</strong>。</p>
+    <div class="rd">
+      <div class="rdstep"><b>收到 1000 步</b><span>rate 1.776 · RMSE 0.95<br>完整图像</span></div>
+      <div class="rdstep"><b>900 步</b><span>rate 0.12 · RMSE 12.0<br>细节仍缺</span></div>
+      <div class="rdstep"><b>700 步</b><span>rate 0.029 · RMSE 24.4</span></div>
+      <div class="rdstep"><b>500 步</b><span>rate 0.007 · RMSE 38.0</span></div>
+      <div class="rdstep"><b>300 步</b><span>rate 0.0008 · RMSE 54.2</span></div>
+      <div class="rdstep"><b>100 步</b><span>rate 0 · RMSE 67.6<br>只剩大轮廓</span></div>
+    </div>
+    <p>生成过程也对应这个顺序：<strong>大尺度特征先出现，细节最后补齐</strong>（Fig.6/10）。在 CelebA-HQ 上固定同一中间隐变量多次采样，t=750 的样本已共享性别、发色、姿态等高层属性（Fig.7），说明中间隐变量确实编码了可解释属性。作者进一步证明：把扩散步数设成数据维度、前向改成逐坐标掩码，这套框架退化为自回归模型——<strong>扩散 = 一种无法用坐标重排表达的广义 bit 顺序的自回归</strong>。</p>
+    <p class="hint">作者也承认：Algorithm 3/4 的「发送端」依赖 minimal random coding，对高维数据不可行，所以压缩只是 proof of concept，不是可用系统。</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">07</span><h2>成本与边界：好图是拿采样时间换的</h2><span class="tag">代价</span></div>
+    <table>
+      <tr><th>项目</th><th>数值（论文实测）</th><th>含义</th></tr>
+      <tr><td>硬件</td><td>TPU v3-8（约 8×V100）</td><td>非大规模集群，单机可复现量级</td></tr>
+      <tr><td>CIFAR-10 训练</td><td>batch 128，21 步/秒，800k 步 ≈ 10.6 h</td><td>训练并不贵，这是它的卖点</td></tr>
+      <tr><td>CIFAR 采样</td><td>256 张 / 17 s</td><td>≈ 0.07 s 一张（32×32）</td></tr>
+      <tr><td>256² 采样</td><td>128 张 / 300 s</td><td>≈ 2.3 s 一张，1000 次网络前向</td></tr>
+      <tr><td>参数量</td><td>35.7M（CIFAR）· 114M（LSUN/CelebA）· 256M（大版）</td><td>与同期 GAN 同量级</td></tr>
+      <tr><td>采样步数</td><td>T = 1000（未做 sweep）</td><td>慢的根源；后续 DDIM 才解决</td></tr>
+    </table>
+    <div class="limit">
+      <div><strong>似然不具竞争力</strong>：≤3.75 bits/dim 输给自回归 2.80；作者的解释是模型偏向有损压缩，但未解决。</div>
+      <div><strong>只做无条件生成</strong>：无文本/类别条件、无 latent 压缩，256² 全在像素空间做，计算重。</div>
+      <div><strong>超参敏感</strong>：256² 必须把 lr 从 2e-4 降到 2e-5 才稳；dropout 只在 CIFAR 有效；方差学不了。</div>
+      <div><strong>社会风险自陈</strong>：可造高知名度人物伪造影像用于政治目的，训练集偏差会被放大；仅提示，无缓解方案。</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">08</span><h2>在本序列中的位置</h2><span class="tag">脉络</span></div>
+    <div class="tl">
+      <div class="tli"><b>01–02</b><span>综述 · CNN 起点</span></div>
+      <div class="tli"><b>03–04</b><span>VGG · ResNet</span></div>
+      <div class="tli"><b>05–06</b><span>LSTM · Seq2Seq</span></div>
+      <div class="tli"><b>07–08</b><span>Attention · Transformer</span></div>
+      <div class="tli"><b>09 · 13</b><span>CPP 综述 · CPP×RL</span></div>
+      <div class="tli"><b>10–12</b><span>福祉 · 伦理 · 监管</span></div>
+      <div class="tli"><b>14–16</b><span>ViT · BERT · CLIP</span></div>
+      <div class="tli now"><b>17</b><span>DDPM · 生成范式</span></div>
+    </div>
+    <p style="margin-top:10px;">前 16 期把「判别式」这一支铺完了：CNN → 序列 → Attention → 视觉/语言编码器 → 图文对齐。DDPM 补的是<strong>生成式</strong>这一支的第一块基石——同一年代的另一条主线（自回归语言模型）在第 6、8、15 期已覆盖，而「从噪声里长出图像」的路线从此成为 ADLCV 与后续多模态生成（含 Stable Diffusion 系）的共同底座。</p>
+    <div class="grid">
+      <div class="card"><h3>下一步读什么</h3><p>DDIM（2020，20–50 步采样）→ Improved DDPM（2021，学方差 + cosine schedule）→ Classifier Guidance（2021）→ LDM / Stable Diffusion（2022）。</p></div>
+      <div class="card"><h3>可迁移到自己的项目</h3><p>「换参数化 &gt; 换架构」（FID 13.51→3.17）；按难度重加权（对应 CPP 里给边界决策更高权重）；粗到细生成 ↔ 分层覆盖规划。</p></div>
+    </div>
+    <p class="hint"><span class="pill">避坑</span>引用 FID 3.17 时必须注明「训练集口径」；引用 NLL 时不要与 GAN 比（GAN 无似然）；引用采样速度时区分 32² 与 256²。</p>
+  </section>
+
+  <div class="foot">
+    数据来源：Denoising Diffusion Probabilistic Models, Ho, Jain &amp; Abbeel, NeurIPS 2020（arXiv:2006.11239v2），Table 1–4、Fig.5–10、附录 A–D。<br>
+    本图为阅读笔记的静态示意版（html_svg），非论文原图，不含精确测量含义。第 17 期 · 2026-11-10。
+  </div>
+</div>
+</html>
