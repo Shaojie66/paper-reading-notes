@@ -1,0 +1,209 @@
+<html style="margin:0;padding:0;">
+<title>DDIM（ICLR 2021）论文结构示意图 · 第18期</title>
+<style>
+  :root{
+    --ink:#1b1d1f; --sub:#5b6167; --line:#dcdcd8; --bg:#f7f7f4; --card:#ffffff;
+    --blue:#2f6fb0; --red:#c2483d; --green:#3f7d55; --amber:#b07a2f; --violet:#6a5a9e;
+  }
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{width:100%;max-width:1060px;margin:0 auto;padding:22px 18px 34px;box-sizing:border-box;}
+  .head{border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:18px;}
+  .head h1{font-size:24px;line-height:1.35;margin:0 0 6px;letter-spacing:.2px;}
+  .head .meta{font-size:13.5px;color:var(--sub);line-height:1.6;}
+  .seq{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:10px;padding:2px 8px;margin-right:6px;color:var(--sub);background:#fff;}
+  section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:0 0 14px;}
+  .shead{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+  .num{font-size:12px;font-weight:700;color:#fff;background:var(--ink);border-radius:4px;padding:2px 7px;letter-spacing:.5px;flex:none;}
+  .shead h2{font-size:16px;margin:0;line-height:1.4;}
+  .shead .tag{font-size:12px;color:var(--sub);margin-left:auto;flex:none;}
+  p{margin:0 0 8px;font-size:14.5px;line-height:1.75;}
+  .lead{font-size:14.5px;line-height:1.75;}
+  .muted{color:var(--sub);}
+  .formula{font-family:"SFMono-Regular",Menlo,Consolas,monospace;font-size:13px;background:#f2f3ef;
+    border-left:3px solid var(--blue);padding:9px 11px;border-radius:0 6px 6px 0;margin:8px 0;line-height:1.75;overflow-x:auto;}
+  .hint{font-size:12.5px;color:var(--sub);margin-top:8px;line-height:1.65;}
+  .bars{margin-top:6px;}
+  .row{display:flex;align-items:center;gap:8px;margin:5px 0;}
+  .rl{flex:0 0 178px;font-size:12.5px;color:var(--sub);text-align:right;}
+  .track{flex:1 1 200px;height:14px;background:#eef0ec;border-radius:7px;position:relative;overflow:hidden;}
+  .fill{height:14px;border-radius:7px;}
+  .rv{flex:0 0 66px;font-size:12.5px;color:var(--sub);}
+  .ours .rl{color:var(--ink);font-weight:600;}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px;}
+  th,td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top;}
+  th{color:var(--sub);font-weight:600;font-size:12.5px;}
+  td.nt{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  tr.hl td{background:#f3f7fb;font-weight:600;}
+  tr.bad td{color:#8a8f95;}
+  .grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
+  .card{flex:1 1 220px;min-width:200px;border:1px solid var(--line);border-radius:8px;padding:10px 11px;background:#fcfcfa;}
+  .card h3{margin:0 0 5px;font-size:13.5px;}
+  .card p{font-size:13px;line-height:1.65;margin:0;color:var(--sub);}
+  .two{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;}
+  .pane{flex:1 1 300px;border:1px solid var(--line);border-radius:8px;padding:10px 11px;background:#fbfbf8;}
+  .pane h3{margin:0 0 7px;font-size:13.5px;}
+  .chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0;}
+  .node{flex:0 0 auto;border:1px solid var(--line);border-radius:7px;padding:6px 9px;min-width:60px;text-align:center;background:#fff;}
+  .node b{display:block;font-size:13px;}
+  .node span{display:block;font-size:11.5px;color:var(--sub);margin-top:2px;}
+  .node.on{border:2px solid var(--blue);}
+  .node.skip{border-style:dashed;color:#9aa0a6;}
+  .node.skip b,.node.skip span{color:#9aa0a6;}
+  .arrow{flex:0 0 auto;font-size:14px;color:var(--sub);}
+  .knob{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .kstep{flex:1 1 150px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fbfbf8;}
+  .kstep b{font-size:12.5px;display:block;}
+  .kstep span{font-size:12px;color:var(--sub);display:block;margin-top:3px;line-height:1.55;}
+  .kstep.act{border:2px solid var(--green);background:#f4f8f4;}
+  .limit{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+  .limit div{flex:1 1 300px;font-size:13px;line-height:1.65;border-left:3px solid var(--amber);padding:4px 0 4px 9px;background:#fdfbf6;}
+  .foot{font-size:12px;color:var(--sub);line-height:1.7;border-top:1px solid var(--line);padding-top:10px;}
+  .pill{display:inline-block;font-size:11.5px;border-radius:12px;padding:1px 8px;margin:0 2px 2px 0;background:#eef1f6;color:#37507a;}
+</style>
+<div class="wrap">
+
+  <div class="head">
+    <div class="seq">第 18 期 · 生成模型</div><div class="seq">难度：中级</div><div class="seq">ICLR 2021</div>
+    <h1>Denoising Diffusion Implicit Models（DDIM）</h1>
+    <div class="meta">Jiaming Song · Chenlin Meng · Stefano Ermon（Stanford）｜ICLR 2021｜arXiv:2010.02502v4<br>
+    示意图为阅读笔记的图解版，数字均取自论文 Table 1–3、Fig.4 与附录 B；非官方结构图。</div>
+  </div>
+
+  <section>
+    <div class="shead"><span class="num">01</span><h2>接第 17 期的短板：图是好了，可出图要 1000 步</h2><span class="tag">问题</span></div>
+    <p class="lead">DDPM 的反向链必须逐步串行展开 <strong>T = 1000</strong> 次网络前向，不能并行；而 GAN 只要一次前向。作者给的量级对比很扎眼（单张 2080 Ti）：</p>
+    <div class="bars">
+      <div class="row"><div class="rl">DDPM 采样 5 万张 32×32</div><div class="track"><div class="fill" style="width:100%;background:var(--red);"></div></div><div class="rv">≈ 20 小时</div></div>
+      <div class="row"><div class="rl">GAN 采样 5 万张 32×32</div><div class="track"><div class="fill" style="width:0.08%;background:var(--green);min-width:3px;"></div></div><div class="rv">&lt; 1 分钟</div></div>
+      <div class="row"><div class="rl">DDPM 采样 5 万张 256×256</div><div class="track"><div class="fill" style="width:100%;background:#e0a49c;"></div></div><div class="rv">≈ 1000 小时</div></div>
+    </div>
+    <p class="hint">条形为示意比例（以最长者为 100%），不是线性刻度；256² 一行的绝对耗时约为 32² 的 50 倍。</p>
+    <p>根源在建模假设：反向过程被定义成前向扩散的<strong>逆</strong>。前向 1000 步，反向就"必须"1000 步——除非先问一句：损失函数真的依赖这条 1000 步的链吗？</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">02</span><h2>关键观察：损失只认边缘分布，不认联合分布</h2><span class="tag">方法·突破口</span></div>
+    <p class="lead">训练目标里到处是 $x_t=\sqrt{\alpha_t}x_0+\sqrt{1-\alpha_t}\epsilon$，它只用到第 $t$ 步的<strong>边缘</strong> $q(x_t|x_0)=\mathcal N(\sqrt{\alpha_t}x_0,(1-\alpha_t)I)$，从未直接约束<strong>联合</strong> $q(x_{1:T}|x_0)$。</p>
+    <div class="two">
+      <div class="pane">
+        <h3 style="color:var(--green);">边缘：钉死不动</h3>
+        <div class="chain">
+          <div class="node on"><b>q(x₁|x₀)</b><span>N(√α₁x₀, ·)</span></div>
+          <div class="node on"><b>q(x₂|x₀)</b><span>同形</span></div>
+          <div class="node on"><b>…</b><span>同形</span></div>
+          <div class="node on"><b>q(x_T|x₀)</b><span>≈ N(0, I)</span></div>
+        </div>
+        <p style="font-size:12.5px;color:var(--sub);margin:6px 0 0;">每个 t 的分布形状不变 ⇒ 训练数据不变</p>
+      </div>
+      <div class="pane">
+        <h3 style="color:var(--blue);">联合：随便换</h3>
+        <div class="chain">
+          <div class="node"><b>x₀</b></div><div class="arrow">⇢</div>
+          <div class="node on"><b>x_t</b></div><div class="arrow">⇠</div>
+          <div class="node"><b>x_{t-1}</b></div><div class="arrow">⇢</div>
+          <div class="node on"><b>x_T</b></div>
+        </div>
+        <p style="font-size:12.5px;color:var(--sub);margin:6px 0 0;">中间怎么走，只要落点分布对，损失完全看不出</p>
+      </div>
+    </div>
+    <p>于是可以另造一族<strong>非马尔可夫</strong>前向过程（参数 σ）：</p>
+    <div class="formula">q_σ(x_{t-1} | x_t, x_0) = N( √α_{t-1}·x_0 + √(1-α_{t-1}-σ_t²)·(x_t - √α_t·x_0)/√(1-α_t) , σ_t² I )</div>
+    <p class="hint">这个均值是"凑"出来的：附录 B 引理 1 用归纳法证明，代入后 q_σ(x_t|x₀) 仍是 N(√α_t·x₀,(1-α_t)I)。边缘对齐，联合被替换。</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">03</span><h2>定理 1：换了联合，目标函数只差一个常数</h2><span class="tag">方法·理论</span></div>
+    <div class="formula">J_σ(ε_θ) = L_γ(ε_θ) + C ,    其中 γ_t = 1/(2d·σ_t²·α_t)</div>
+    <p>新的变分目标与 DDPM 用的加权目标<strong>等价到常数</strong>。因此：<strong>已经训好的 DDPM 权重可以直接用</strong>——σ 只改"怎么采样"，不改"怎么训练"。这是全文最关键的一句话，也是它"零重训"的根据。</p>
+    <div class="grid">
+      <div class="card"><h3>对上游的意义</h3><p>沿用 DDPM 的 L_simple（即 γ=1），不必为每个 σ 重新训一个模型。</p></div>
+      <div class="card"><h3>对下游的意义</h3><p>CIFAR-10、LSUN Bedroom/Church 直接用 DDPM 官方 checkpoint；仅 CelebA 64² 由作者补训。</p></div>
+    <div class="card"><h3>边界</h3><p>σ>0 时严格成立；σ=0（纯确定性）是取极限，作者用极小 σ 近似（脚注 5）。</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">04</span><h2>采样一步长什么样：三项相加，一个旋钮控制随机性</h2><span class="tag">方法·核心公式</span></div>
+    <div class="formula">x_{t-1} = √α_{t-1}·x̂_0            ← 预测的原图（由 ε_θ 反解）<br>
+        + √(1-α_{t-1}-σ_t²)·ε_θ(x_t)  ← 指向 x_t 的方向<br>
+        + σ_t·ε_t                      ← 注入的随机噪声</div>
+    <p>随机性强弱由 σ 决定，取成 σ_t(η)=η·√((1-α_{t-1})/(1-α_t))·√(1-α_t/α_{t-1}) 后，一个 η 就扫过整族：</p>
+    <div class="knob">
+      <div class="kstep"><b>η = 1</b><span>前向恢复马尔可夫<br>生成过程 = DDPM（随机）</span></div>
+      <div class="kstep"><b>0 &lt; η &lt; 1</b><span>连续插值：随机性可调<br>样本质量与多样性的折中</span></div>
+      <div class="kstep act"><b>η = 0</b><span>= DDIM：随机项消失<br>给定 x_T 唯一确定 x_0（隐含概率模型）</span></div>
+    </div>
+    <p class="hint">确定性带来的直接后果：$x_T$ 变成一张图的可逆编码；DDPM 因随机采样不可逆，做不到这一点。</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">05</span><h2>加速：只走轨迹的一个子序列</h2><span class="tag">方法·加速</span></div>
+    <p class="lead">既然目标只依赖边缘，前向也不必跑满 1000 步。取递增子序列 τ ⊂ [1…T]，长度 S ≪ T，让 q(x_τ|x₀) 保持不变，更新式只换系数，<strong>不用重训</strong>：</p>
+    <div class="chain">
+      <div class="node on"><b>τ₁</b></div><div class="arrow">→</div>
+      <div class="node skip"><b>×</b><span>被跳过</span></div><div class="arrow">→</div>
+      <div class="node on"><b>τ₂</b></div><div class="arrow">→</div>
+      <div class="node skip"><b>×</b><span>被跳过</span></div><div class="arrow">→</div>
+      <div class="node on"><b>τ₃</b></div><div class="arrow">→</div>
+      <div class="node"><b>…</b></div><div class="arrow">→</div>
+      <div class="node on"><b>τ_S = T</b></div>
+    </div>
+    <p class="hint">实线节点参与采样，虚线节点直接跳过。间隔策略：CIFAR-10 用二次间隔 τ_i=⌊ci²⌋（小 t 更密），其余用线性间隔。</p>
+    <p>作者同时证明：这一步在连续极限下等价于对 ODE 做<strong>欧拉积分</strong>——所以"少步采样"不是偷工减料的近似，而是换了一种离散化（详见 08 节）。</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">06</span><h2>结果：步数受限时全面占优，满步时略输随机版</h2><span class="tag">效果</span></div>
+    <table>
+      <tr><th>CIFAR-10（FID ↓）</th><th class="nt">S=10</th><th class="nt">S=20</th><th class="nt">S=50</th><th class="nt">S=100</th><th class="nt">S=1000</th></tr>
+      <tr class="hl"><td>DDIM（η=0）</td><td class="nt">13.36</td><td class="nt">6.84</td><td class="nt">4.67</td><td class="nt">4.16</td><td class="nt">4.04</td></tr>
+      <tr><td>η=0.2</td><td class="nt">14.04</td><td class="nt">7.11</td><td class="nt">4.77</td><td class="nt">4.25</td><td class="nt">4.29</td></tr>
+      <tr><td>η=0.5</td><td class="nt">16.66</td><td class="nt">8.35</td><td class="nt">5.25</td><td class="nt">4.46</td><td class="nt">4.09</td></tr>
+      <tr><td>DDPM（η=1）</td><td class="nt">41.07</td><td class="nt">18.36</td><td class="nt">8.01</td><td class="nt">5.78</td><td class="nt">4.73</td></tr>
+      <tr class="bad"><td>DDPM 大方差 σ̂</td><td class="nt">367.43</td><td class="nt">133.37</td><td class="nt">32.72</td><td class="nt">9.99</td><td class="nt">3.17</td></tr>
+    </table>
+    <table>
+      <tr><th>LSUN 256×256（FID ↓）</th><th class="nt">S=10</th><th class="nt">S=20</th><th class="nt">S=50</th><th class="nt">S=100</th><th class="nt">1000 步 DDPM 参考</th></tr>
+      <tr class="hl"><td>Bedroom · DDIM</td><td class="nt">16.95</td><td class="nt">8.89</td><td class="nt">6.75</td><td class="nt">6.62</td><td class="nt">6.36</td></tr>
+      <tr><td>Bedroom · DDPM</td><td class="nt">42.78</td><td class="nt">22.77</td><td class="nt">10.81</td><td class="nt">6.81</td><td class="nt">—</td></tr>
+      <tr class="hl"><td>Church · DDIM</td><td class="nt">19.45</td><td class="nt">12.47</td><td class="nt">10.84</td><td class="nt">10.58</td><td class="nt">7.89</td></tr>
+      <tr><td>Church · DDPM</td><td class="nt">51.56</td><td class="nt">23.37</td><td class="nt">11.16</td><td class="nt">8.27</td><td class="nt">—</td></tr>
+    </table>
+    <p class="hint">两条结论要分开读：<strong>①短轨迹</strong>（S≤100）DDIM 明显更好，墙钟加速 10–50×，100 步已接近 1000 步质量；<strong>②满步</strong>（S=1000）DDIM 反而略输 σ̂ 版 DDPM（4.04 vs 3.17；3.51 vs 3.26）——随机性带来一点多样性收益。σ̂ 在 10 步直接崩到 367，因为每步注入噪声与粗化轨迹失配。</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">07</span><h2>白送的三项能力：一致性、重建、潜空间插值</h2><span class="tag">效果·附带</span></div>
+    <div class="grid">
+      <div class="card"><h3>一致性 consistency</h3><p>固定同一个 $x_T$，用 20/50/100/1000 步分别生成：性别、发色、姿态、布局等高层特征一致，只有细节不同 ⇒ $x_T$ 本身就是语义编码。</p></div>
+      <div class="card"><h3>可逆重建</h3><p>CIFAR-10 测试集逐维 MSE：S=10 为 0.014 → S=100 为 0.0009 → S≥500 约 1e-4。DDPM 随机采样不可逆，做不到。</p></div>
+      <div class="card"><h3>slerp 语义插值</h3><p>在 $x_T$ 上做球面线性插值，中间样本语义连续；4 个潜变量还能做网格插值。GAN 式插值它终于有了。</p></div>
+    </div>
+    <p class="hint">三者都来自同一个原因：生成过程确定性、且 $x_T$ 与 $x_0$ 同维可逆。</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">08</span><h2>为什么能加速：少步采样 = 粗粒度 ODE 积分</h2><span class="tag">解释</span></div>
+    <div class="formula">连续化后取 x̄ = x/√α, σ = √((1-α)/α)：<br>
+d x̄(t)/dt = (dσ(t)/dt) · ε_θ( x̄(t) / √(σ²(t)+1) )      ← 欧拉法逐步积分</div>
+    <p>命题 1 证明：最优模型下它就是 Song et al. (2020) 的 <strong>VE-SDE 概率流 ODE</strong>。差别只在离散化——DDIM 对 dσ 取欧拉步，对方对 dt 取欧拉步，步数很少时两者结果不同。反着积分（t: 0→T）即可把图像编码成 $x_T$。</p>
+    <div class="two">
+      <div class="pane"><h3>它解决了什么</h3><p>把"1000 步"从建模假设降级为<strong>精度预算</strong>：步数变成可调的旋钮，误差可用 FID 与重建 MSE 量化。</p></div>
+      <div class="pane"><h3>它没解决什么</h3><p>训练端零节省，仍依赖已训好的 1000 步 DDPM 权重；只有 4 个无条件图像数据集，无 latent、无文本条件；离散情形只在附录 A，无实验。</p></div>
+    </div>
+    <div class="limit">
+      <div><strong>极短轨迹仍不行</strong>：CIFAR S=10 的 FID 13.36，与 1000 步的 4.04 差一个档，"20 步可用"是相对的。</div>
+      <div><strong>确定性 = 一图一码</strong>：无法多次随机取样择优，多样性完全依赖先验抽样，也做不了随机细化。</div>
+      <div><strong>定理边界</strong>：σ=0 不在定理 1 覆盖范围，靠极小 σ 近似；ODE 等价也只在最优模型下成立。</div>
+      <div><strong>别当成"更快的 DDPM"</strong>：同一权重的另一种采样器，η、S、τ 调度必须随实验记录，否则数字不可比。</div>
+    </div>
+  </section>
+
+  <div class="foot">
+    数据来源：Denoising Diffusion Implicit Models, Song, Meng &amp; Ermon, ICLR 2021（arXiv:2010.02502v4），Table 1–3、Fig.4–6、Theorem 1、Proposition 1、附录 A–D。<br>
+    本图为阅读笔记的静态示意版（html_svg），非论文原图，不含精确测量含义。第 18 期 · 2026-11-12。
+  </div>
+</div>
+</html>

@@ -3,7 +3,7 @@
 > AI 学习视角的结构化论文精读归档：每两天一篇，由豆包定时任务自动检索、精读并推送。
 > 每期产出：结构化阅读笔记（Markdown）+ 论文结构示意图（HTML）。
 ![更新频率](https://img.shields.io/badge/%E6%9B%B4%E6%96%B0-%E6%AF%8F%E4%B8%A4%E5%A4%A9%E4%B8%80%E6%9C%9F-orange)
-![论文数量](https://img.shields.io/badge/%E8%AE%BA%E6%96%87-17%E7%AF%87-blue)
+![论文数量](https://img.shields.io/badge/%E8%AE%BA%E6%96%87-18%E7%AF%87-blue)
 ![选题策略](https://img.shields.io/badge/%E9%80%89%E9%A2%98-%E5%85%88%E7%BB%BC%E8%BF%B0%E5%90%8E%E7%BB%8F%E5%85%B8-brightgreen)
 ![开源协议](https://img.shields.io/badge/License-MIT-green)
 ## 仓库内容
@@ -26,6 +26,7 @@
 | 第 15 期 | BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding（Devlin et al., NAACL 2019） | 范式·预训练语言模型 | 经典 | 已完成 |
 | 第 16 期 | Learning Transferable Visual Models From Natural Language Supervision（Radford et al., ICML 2021） | 范式·多模态对比学习 | 经典 | 已完成 |
 | 第 17 期 | Denoising Diffusion Probabilistic Models（Ho, Jain & Abbeel, NeurIPS 2020） | 范式·生成模型（扩散） | 中级 | 已完成 |
+| 第 18 期 | Denoising Diffusion Implicit Models（Song, Meng & Ermon, ICLR 2021） | 范式·生成模型（加速采样） | 中级 | 已完成 |
 > 后续每期生成后会自动追加本表。
 ## 每期交付物
 进入 `notes/<期数>-<论文简称>/` 目录查看：
@@ -51,6 +52,7 @@
 - [x] 范式：预训练语言模型（BERT, NAACL 2019）
 - [x] 范式：多模态对比预训练（CLIP, ICML 2021）
 - [x] 范式：生成模型 · 扩散（DDPM, NeurIPS 2020）
+- [x] 范式：生成模型 · 加速采样（DDIM, ICLR 2021）
 ## 选题策略
 - 难度：从基础入门论文开始，随期数递增；
 - 方向：深度学习基础、移动机器人覆盖路径规划、AI 伦理与监管、社交媒体与青少年福祉；
@@ -92,7 +94,8 @@
 │   ├── 14-ViT-2021/
 │   ├── 15-BERT-2019/
 │   ├── 16-CLIP-2021/
-│   └── 17-DDPM-2020/
+│   ├── 17-DDPM-2020/
+│   └── 18-DDIM-2021/
 └── skills/                 # 配套开源 Skill
     └── efficient-paper-reading/
         ├── SKILL.md
