@@ -1,0 +1,172 @@
+<html style="margin:0;padding:0;">
+<title>第19期 ADM：架构消融与分类器引导（NeurIPS 2021）</title>
+<div style="width:100%;box-sizing:border-box;background:#faf8f5;color:#20242c;font-family:-apple-system,'PingFang SC','Helvetica Neue',Arial,sans-serif;padding:28px 20px 34px;line-height:1.62;font-size:15px;">
+
+<div style="max-width:1080px;margin:0 auto;">
+
+<div style="border-left:5px solid #0f766e;padding:2px 0 2px 14px;margin-bottom:26px;">
+<h1 style="font-size:23px;line-height:1.35;margin:0 0 6px;font-weight:700;">让扩散打赢 GAN：先把架构调好，再给采样加一只手</h1>
+<p style="margin:0;color:#5b6472;font-size:14px;">Dhariwal &amp; Nichol，NeurIPS 2021 ｜ ImageNet 256×256 FID 4.59（BigGAN-deep 6.95），25 步即可打平 ｜ 文字为笔记，图为结构示意</p>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:30px;">
+<div style="flex:1 1 300px;box-sizing:border-box;background:#fff;border:1px solid #e3ddd3;border-radius:10px;padding:14px 16px;">
+<div style="font-size:13px;letter-spacing:.08em;color:#0f766e;font-weight:700;margin-bottom:4px;">第一腿 · 架构</div>
+<p style="margin:0;">U-Net 逐项消融（加宽、多头、多分辨率注意力、BigGAN 上下采样、AdaGN）→ 无条件生成 SOTA。LSUN Bedroom <b>1.90</b> vs StyleGAN 2.35。</p>
+</div>
+<div style="flex:1 1 300px;box-sizing:border-box;background:#fff;border:1px solid #e3ddd3;border-radius:10px;padding:14px 16px;">
+<div style="font-size:13px;letter-spacing:.08em;color:#b45309;font-weight:700;margin-bottom:4px;">第二腿 · 引导</div>
+<p style="margin:0;">采样时用噪声图分类器的梯度把均值平移 $\Sigma g$，标量 $s$ 换保真度。ImageNet 256 <b>4.59</b> vs 6.95。</p>
+</div>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#20242c;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">01</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">起点：扩散已经在 CIFAR 赢了，在难的还在输</h2>
+</div>
+<table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e3ddd3;border-radius:8px;overflow:hidden;font-size:14px;">
+<tr style="background:#f2eee6;color:#3a4150;"><th style="text-align:left;padding:9px 12px;font-weight:600;">场景</th><th style="text-align:left;padding:9px 12px;font-weight:600;">扩散</th><th style="text-align:left;padding:9px 12px;font-weight:600;">GAN</th><th style="text-align:left;padding:9px 12px;font-weight:600;">判断</th></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">CIFAR-10（32²，无条件）</td><td style="padding:9px 12px;">3.17</td><td style="padding:9px 12px;">3.26</td><td style="padding:9px 12px;color:#0f766e;">已赢，但数据集小</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#fcfaf7;"><td style="padding:9px 12px;">ImageNet 256（IDDPM + 上采样）</td><td style="padding:9px 12px;">12.26</td><td style="padding:9px 12px;">6.95</td><td style="padding:9px 12px;color:#b91c1c;">仍落后近一倍</td></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">「缺少保真度旋钮」</td><td style="padding:9px 12px;" colspan="2">温度缩放实测：precision 与 recall <b>同时</b>下降，图变糊（附录 G）</td><td style="padding:9px 12px;color:#b91c1c;">没有可用旋钮</td></tr>
+</table>
+<p style="margin:10px 0 0;color:#6b7280;font-size:13px;">作者归因两条：GAN 的架构被社区打磨了五年；似然模型没有 truncation 那种「牺牲多样性换质量」的手段。</p>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#0f766e;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">02</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">第一腿：六个旋钮，各自值多少 FID</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;">
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #0f766e;border-radius:8px;padding:11px 13px;"><b>加宽，别加深</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">两者都能降 FID，但加深的墙钟更慢（Fig.2）→ 选 128 base channels。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #0f766e;border-radius:8px;padding:11px 13px;"><b>多头注意力，64 通道/头</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">1 头 14.08；通道越少 FID 越好，但 64 通道/头墙钟最优。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #0f766e;border-radius:8px;padding:11px 13px;"><b>注意力铺到 32/16/8</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">只在 16×16 做不够，三层都做才显著改善。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #0f766e;border-radius:8px;padding:11px 13px;"><b>BigGAN 式上下采样</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">换掉原来的 resblock 上下采样，正收益。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b45309;border-radius:8px;padding:11px 13px;"><b>残差缩放 1/√2</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">清单里唯一没改善的一项，仍保留（与后续工作一致）。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #0f766e;border-radius:8px;padding:11px 13px;"><b>AdaGN 注入条件</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">$(y_s\text{GroupNorm}(h)+y_b)$：FID <b>13.06</b> vs 15.08（去掉就退化）。</p></div>
+</div>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#b45309;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">03</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">第二腿：引导怎么从「条件概率」变成「挪一下均值」</h2>
+</div>
+<p style="margin:0 0 12px;color:#6b7280;font-size:13px;">下图是推导路径的示意，不是论文原图；箭头表示逻辑依赖。</p>
+<svg viewBox="0 0 1040 300" width="100%" style="display:block;background:#fff;border:1px solid #e3ddd3;border-radius:8px;">
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#9aa3b2"/></marker>
+</defs>
+<rect x="18" y="26" width="228" height="92" rx="8" fill="#f6f4ef" stroke="#d8d2c6"/>
+<text x="34" y="52" font-size="14" font-weight="700" fill="#20242c">① 条件化反向步</text>
+<text x="34" y="74" font-size="13" fill="#4b5563">p(x_t|x_{t+1},y) ∝</text>
+<text x="34" y="94" font-size="13" fill="#4b5563">p_θ(x_t|x_{t+1}) · p_φ(y|x_t)</text>
+<text x="34" y="112" font-size="12" fill="#8a7a5f">附录 H 给严格证明</text>
+
+<line x1="248" y1="72" x2="292" y2="72" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#ar)"/>
+
+<rect x="296" y="26" width="240" height="92" rx="8" fill="#fff7ec" stroke="#e6cfa6"/>
+<text x="312" y="52" font-size="14" font-weight="700" fill="#20242c">② 高斯平移</text>
+<text x="312" y="74" font-size="13" fill="#4b5563">在 μ 处泰勒展开 ⇒</text>
+<text x="312" y="94" font-size="13" fill="#4b5563">N(μ + Σg, Σ)</text>
+<text x="312" y="112" font-size="12" fill="#8a7a5f">g = ∇log p_φ(y|x_t)</text>
+
+<line x1="538" y1="72" x2="582" y2="72" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#ar)"/>
+
+<rect x="586" y="26" width="436" height="92" rx="8" fill="#f0f7f5" stroke="#a9cfc7"/>
+<text x="602" y="52" font-size="14" font-weight="700" fill="#20242c">③ 缩放 s 的含义</text>
+<text x="602" y="74" font-size="13" fill="#4b5563">s∇log p(y|x) = ∇log (1/Z) p(y|x)^s</text>
+<text x="602" y="94" font-size="13" fill="#4b5563">s&gt;1 把条件分布变尖 → 向分类器众数集中 → 保真↑ 多样↓</text>
+<text x="602" y="112" font-size="12" fill="#8a7a5f">所以 s=1 常常不够（Table 4：无条件 26.21 → 33.03）</text>
+
+<line x1="230" y1="122" x2="230" y2="176" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#ar)"/>
+
+<rect x="18" y="180" width="1004" height="96" rx="8" fill="#fff" stroke="#d8d2c6"/>
+<text x="34" y="206" font-size="14" font-weight="700" fill="#20242c">④ 确定性采样（DDIM）用另一条路：score 恒等式</text>
+<text x="34" y="230" font-size="13.5" fill="#374151">∇log p_θ(x_t) = −ε_θ(x_t)/√(1−ᾱ_t) 　⇒　 ε̂(x_t) = ε_θ(x_t) − √(1−ᾱ_t) · ∇log p_φ(y|x_t)</text>
+<text x="34" y="254" font-size="13" fill="#6b7280">只改噪声预测这一行，采样器原样复用第 18 期的 DDIM；25 步 + 引导就是靠这条式子跑出来的。</text>
+</svg>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#b45309;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">04</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">s 是一个真旋钮，也是一个真取舍</h2>
+</div>
+<table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e3ddd3;font-size:14px;">
+<tr style="background:#f2eee6;color:#3a4150;"><th style="text-align:left;padding:9px 12px;font-weight:600;">ImageNet 256，条件训练</th><th style="padding:9px 12px;font-weight:600;">FID↓</th><th style="padding:9px 12px;font-weight:600;">IS↑</th><th style="padding:9px 12px;font-weight:600;">Precision↑</th><th style="padding:9px 12px;font-weight:600;">Recall↑</th></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">无引导</td><td style="padding:9px 12px;text-align:center;">10.94</td><td style="padding:9px 12px;text-align:center;">100.98</td><td style="padding:9px 12px;text-align:center;">0.69</td><td style="padding:9px 12px;text-align:center;">0.63</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#f0f7f5;"><td style="padding:9px 12px;">s = 1.0</td><td style="padding:9px 12px;text-align:center;font-weight:700;color:#0f766e;">4.59</td><td style="padding:9px 12px;text-align:center;">186.70</td><td style="padding:9px 12px;text-align:center;">0.82</td><td style="padding:9px 12px;text-align:center;">0.52</td></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">s = 10.0</td><td style="padding:9px 12px;text-align:center;color:#b91c1c;">9.11</td><td style="padding:9px 12px;text-align:center;">283.92</td><td style="padding:9px 12px;text-align:center;">0.88</td><td style="padding:9px 12px;text-align:center;">0.32</td></tr>
+</table>
+<p style="margin:10px 0 0;color:#6b7280;font-size:13px;">读法：s 变大时 IS/precision 还能继续涨，但 FID 会掉头——因为 FID 同时罚「不像」和「太窄」。所以最优 s 永远是个折中点，且随分辨率与步数变化（250 步时 64/128/256/512 的最优 s = 1.0 / 0.5 / 1.0 / 4.0；25 步 DDIM = —/1.25/2.5/9.0）。</p>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#20242c;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">05</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">战绩：七个数据集里全部低于同分辨率 GAN</h2>
+</div>
+<table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e3ddd3;font-size:14px;">
+<tr style="background:#f2eee6;color:#3a4150;"><th style="text-align:left;padding:9px 12px;font-weight:600;">数据集</th><th style="padding:9px 12px;font-weight:600;">本文 FID</th><th style="padding:9px 12px;font-weight:600;">GAN FID</th><th style="text-align:left;padding:9px 12px;font-weight:600;">备注</th></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">LSUN Bedroom 256</td><td style="padding:9px 12px;text-align:center;font-weight:700;color:#0f766e;">1.90</td><td style="padding:9px 12px;text-align:center;">2.35</td><td style="padding:9px 12px;color:#6b7280;">StyleGAN</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#fcfaf7;"><td style="padding:9px 12px;">LSUN Horse 256</td><td style="padding:9px 12px;text-align:center;font-weight:700;color:#0f766e;">2.57</td><td style="padding:9px 12px;text-align:center;">3.84</td><td style="padding:9px 12px;color:#6b7280;">StyleGAN2</td></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">LSUN Cat 256</td><td style="padding:9px 12px;text-align:center;font-weight:700;color:#0f766e;">5.57</td><td style="padding:9px 12px;text-align:center;">7.25</td><td style="padding:9px 12px;color:#6b7280;">StyleGAN2</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#fcfaf7;"><td style="padding:9px 12px;">ImageNet 64</td><td style="padding:9px 12px;text-align:center;font-weight:700;color:#0f766e;">2.07</td><td style="padding:9px 12px;text-align:center;">4.06</td><td style="padding:9px 12px;color:#6b7280;">BigGAN-deep</td></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">ImageNet 128</td><td style="padding:9px 12px;text-align:center;font-weight:700;color:#0f766e;">2.97</td><td style="padding:9px 12px;text-align:center;">6.02</td><td style="padding:9px 12px;color:#6b7280;">ADM-G</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#fcfaf7;"><td style="padding:9px 12px;">ImageNet 256</td><td style="padding:9px 12px;text-align:center;font-weight:700;color:#0f766e;">4.59</td><td style="padding:9px 12px;text-align:center;">6.95</td><td style="padding:9px 12px;color:#6b7280;">ADM-G</td></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">ImageNet 512</td><td style="padding:9px 12px;text-align:center;font-weight:700;color:#0f766e;">7.72</td><td style="padding:9px 12px;text-align:center;">8.43</td><td style="padding:9px 12px;color:#6b7280;">ADM-G</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#eef4f2;"><td style="padding:9px 12px;"><b>ImageNet 256 / 512，仅 25 步</b></td><td style="padding:9px 12px;text-align:center;">5.44 / 8.41</td><td style="padding:9px 12px;text-align:center;">6.95 / 8.43</td><td style="padding:9px 12px;color:#0f766e;">已打平，这就是 DDIM + 引导的实用价值</td></tr>
+</table>
+<p style="margin:10px 0 0;color:#6b7280;font-size:13px;">再叠一层上采样：256 从 4.59 → <b>3.94</b>，512 从 7.72 → <b>3.85</b>；两者沿不同方向改进（上采样提 precision 同时保 recall，引导则是拿 recall 换 precision）。</p>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#20242c;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">06</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">代价：算力反而更低，1/8 训练就超了 BigGAN</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
+<div style="background:#fff;border:1px solid #e3ddd3;border-radius:8px;padding:12px 14px;">
+<div style="font-size:13px;color:#6b7280;margin-bottom:4px;">ImageNet 128 · 达到 FID 3.09</div>
+<div style="font-size:16px;"><b>530</b> V100-days <span style="color:#6b7280;font-size:14px;">(生成 521 + 分类器 9)</span></div>
+<div style="font-size:13px;color:#6b7280;">BigGAN-deep：64–128 V100-days 只到 6.02</div>
+</div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-radius:8px;padding:12px 14px;">
+<div style="font-size:13px;color:#6b7280;margin-bottom:4px;">ImageNet 256 · 达到 FID 4.59</div>
+<div style="font-size:16px;"><b>962</b> V100-days</div>
+<div style="font-size:13px;color:#6b7280;">BigGAN-deep：128–256 V100-days 只到 6.95</div>
+</div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-radius:8px;padding:12px 14px;">
+<div style="font-size:13px;color:#6b7280;margin-bottom:4px;">训练到 1/8 时的 FID（128）</div>
+<div style="font-size:16px;">500K 迭代 → <b>5.31</b></div>
+<div style="font-size:13px;color:#6b7280;">已低于 BigGAN 的 6.02（全量 4.10）</div>
+</div>
+</div>
+<p style="margin:10px 0 0;color:#6b7280;font-size:13px;">另一项务实提醒（附录 A.1）：同一模型 PyTorch 朴素实现只跑到 18–25% 显卡利用率，换更大 per-GPU batch + 融合算子后 29–41%。FID 之外，吞吐也是要认真标的。</p>
+</div>
+
+<div style="margin-bottom:8px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#b91c1c;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">07</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">边界：赢的是指标，不是全部</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>采样仍是多步</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">25 步 = 25 次 U-Net + 25 次分类器反传；256 优化后 6.4 img/V100-s，墙钟仍不如 GAN 一步出图。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>引导要标签 + 额外分类器</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">无标签场景没招（作者只提聚类伪标签/真假判别器，未做实验）；分类器还必须在噪声图上训练。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>高分辨率其实靠引导撑</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">512 无引导 FID 23.24，比 256 无引导（10.94）更差；是 s 把它拉回 7.72 的。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>s 与步数强耦合</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">换步数/分辨率就得重扫（1.0 vs 0.5 vs 4.0 vs 9.0），工程成本高，不能照抄别人的 s。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>只是单向旋钮</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">只会让分布变窄：recall 0.63 → 0.52（s=1）→ 0.32（s=10）；「又保真又覆盖」没有对应旋钮。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>结论有范围</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">4 个数据集、256/512 分辨率、4 个指标；在更高 precision 区间，引导其实输给 BigGAN（Fig.5）。</p></div>
+</div>
+</div>
+
+<div style="margin-top:26px;padding-top:14px;border-top:1px dashed #d8d2c6;color:#8a8f99;font-size:13px;">
+数据来源：arXiv:2105.05233（NeurIPS 2021），Table 4–6、8–10、14 与附录 A.1／G／H。示意图为按论文推导路径重绘，非原文插图。
+</div>
+
+</div>
+</div>
+</html>
