@@ -1,0 +1,184 @@
+<html style="margin:0;padding:0;">
+<title>第20期 CFG：无分类器引导（NeurIPS 2021 Workshop）</title>
+<div style="width:100%;box-sizing:border-box;background:#faf8f5;color:#20242c;font-family:-apple-system,'PingFang SC','Helvetica Neue',Arial,sans-serif;padding:28px 20px 34px;line-height:1.62;font-size:15px;">
+
+<div style="max-width:1080px;margin:0 auto;">
+
+<div style="border-left:5px solid #1d4ed8;padding:2px 0 2px 14px;margin-bottom:26px;">
+<h1 style="font-size:23px;line-height:1.35;margin:0 0 6px;font-weight:700;">把分类器扔掉：用两个分数之差，代替一个分类器的梯度</h1>
+<p style="margin:0;color:#5b6472;font-size:14px;">Ho &amp; Salimans，Google Brain ｜ ImageNet 128×128 FID 2.43（ADM-G 2.97），且少训一个分类器 ｜ 文字为笔记，图为结构示意</p>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:30px;">
+<div style="flex:1 1 300px;box-sizing:border-box;background:#fff;border:1px solid #e3ddd3;border-radius:10px;padding:14px 16px;">
+<div style="font-size:13px;letter-spacing:.08em;color:#1d4ed8;font-weight:700;margin-bottom:4px;">训练</div>
+<p style="margin:0;">以概率 $p_{uncond}$ 把条件换成空标记 $\varnothing$。损失函数一个字不改，参数总量不变——<b>只是多了一次 dropout</b>。</p>
+</div>
+<div style="flex:1 1 300px;box-sizing:border-box;background:#fff;border:1px solid #e3ddd3;border-radius:10px;padding:14px 16px;">
+<div style="font-size:13px;letter-spacing:.08em;color:#b45309;font-weight:700;margin-bottom:4px;">采样</div>
+<p style="margin:0;">$\tilde\epsilon=(1+w)\epsilon(z,c)-w\epsilon(z,\varnothing)$，把条件方向放大、无条件成分减掉。$w$ 就是上一期的 $s$。</p>
+</div>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#20242c;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">01</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">上一期的办法有三个麻烦，第三个最要命</h2>
+</div>
+<table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e3ddd3;border-radius:8px;overflow:hidden;font-size:14px;">
+<tr style="background:#f2eee6;color:#3a4150;"><th style="text-align:left;padding:9px 12px;font-weight:600;">麻烦</th><th style="text-align:left;padding:9px 12px;font-weight:600;">具体内容</th><th style="text-align:left;padding:9px 12px;font-weight:600;">后果</th></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">管线</td><td style="padding:9px 12px;">要单独训一个分类器</td><td style="padding:9px 12px;color:#6b7280;">多一套训练流程</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#fcfaf7;"><td style="padding:9px 12px;">复用</td><td style="padding:9px 12px;">分类器必须在<b>带噪</b> $z_\lambda$ 上训练</td><td style="padding:9px 12px;color:#6b7280;">现成的 ImageNet 分类器用不了</td></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;color:#b91c1c;font-weight:700;">说服力</td><td style="padding:9px 12px;">朝分类器梯度走 = 对分类器做<b>梯度攻击</b>；而 FID/IS 本身就是分类器指标</td><td style="padding:9px 12px;color:#b91c1c;">「引导变好」可能只是「把考官骗了」，甚至是在模仿 GAN</td></tr>
+</table>
+<p style="margin:10px 0 0;color:#6b7280;font-size:13px;">本文要回答的不是「怎么把指标刷更高」，而是「能不能不用分类器也做引导」——顺便把第三个质疑连根拔掉。</p>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#1d4ed8;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">02</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">一个网络跑出两个分数，再做线性外推</h2>
+</div>
+<p style="margin:0 0 12px;color:#6b7280;font-size:13px;">下表为流程示意，非论文原图；箭头表示数据流向。</p>
+<svg viewBox="0 0 1040 330" width="100%" style="display:block;background:#fff;border:1px solid #e3ddd3;border-radius:8px;">
+<defs>
+<marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#9aa3b2"/></marker>
+</defs>
+<text x="24" y="28" font-size="13" font-weight="700" fill="#1d4ed8">训练</text>
+<rect x="24" y="40" width="210" height="66" rx="8" fill="#f6f4ef" stroke="#d8d2c6"/>
+<text x="40" y="64" font-size="13.5" fill="#20242c">数据 + 条件 $c$</text>
+<text x="40" y="86" font-size="13" fill="#6b7280">加噪到 $z_\lambda$</text>
+
+<line x1="236" y1="73" x2="288" y2="73" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#ar2)"/>
+
+<rect x="292" y="40" width="300" height="66" rx="8" fill="#fff7ec" stroke="#e6cfa6"/>
+<text x="308" y="64" font-size="13.5" fill="#20242c">以 $p_{uncond}$ 丢弃条件</text>
+<text x="308" y="86" font-size="13" fill="#6b7280">$c\to\varnothing$：同一网络学两种模式</text>
+
+<line x1="594" y1="73" x2="646" y2="73" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#ar2)"/>
+
+<rect x="650" y="40" width="366" height="66" rx="8" fill="#f0f5ff" stroke="#b6cbf5"/>
+<text x="666" y="64" font-size="13.5" fill="#20242c">损失仍是 $\|\epsilon_\theta(z_\lambda,c)-\epsilon\|^2$</text>
+<text x="666" y="86" font-size="13" fill="#6b7280">无新增参数，无新增模块</text>
+
+<text x="24" y="146" font-size="13" font-weight="700" fill="#b45309">采样（每个时间步）</text>
+<rect x="24" y="158" width="250" height="72" rx="8" fill="#f6f4ef" stroke="#d8d2c6"/>
+<text x="40" y="182" font-size="13.5" fill="#20242c">条件分支 $\epsilon(z_\lambda,c)$</text>
+<text x="40" y="204" font-size="13" fill="#6b7280">权重 $1+w$</text>
+<text x="40" y="222" font-size="12" fill="#8a8a8a">前向 ①</text>
+<rect x="24" y="242" width="250" height="72" rx="8" fill="#f6f4ef" stroke="#d8d2c6"/>
+<text x="40" y="266" font-size="13.5" fill="#20242c">无条件分支 $\epsilon(z_\lambda,\varnothing)$</text>
+<text x="40" y="288" font-size="13" fill="#6b7280">权重 $-w$</text>
+<text x="40" y="306" font-size="12" fill="#b91c1c">前向 ②（这就是 2× 成本的来源）</text>
+
+<line x1="278" y1="196" x2="352" y2="196" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#ar2)"/>
+<line x1="278" y1="278" x2="352" y2="278" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#ar2)"/>
+<line x1="352" y1="196" x2="352" y2="252" stroke="#9aa3b2" stroke-width="1.2"/>
+<line x1="352" y1="238" x2="400" y2="238" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#ar2)"/>
+
+<rect x="404" y="190" width="270" height="96" rx="8" fill="#f0f5ff" stroke="#b6cbf5"/>
+<text x="420" y="216" font-size="13.5" font-weight="700" fill="#20242c">线性组合</text>
+<text x="420" y="240" font-size="13" fill="#374151">$\tilde\epsilon=(1+w)\epsilon_c-w\epsilon_u$</text>
+<text x="420" y="262" font-size="12.5" fill="#6b7280">$w=0$ 退回普通条件采样</text>
+<text x="420" y="280" font-size="12.5" fill="#6b7280">$w$ 越大 → 保真↑ 多样↓</text>
+
+<line x1="678" y1="238" x2="726" y2="238" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#ar2)"/>
+<rect x="730" y="206" width="286" height="66" rx="8" fill="#f6f4ef" stroke="#d8d2c6"/>
+<text x="746" y="230" font-size="13.5" fill="#20242c">送进原来的采样步</text>
+<text x="746" y="252" font-size="13" fill="#6b7280">DDPM 祖传采样 / 可换 DDIM</text>
+</svg>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#1d4ed8;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">03</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">它为什么能替代分类器：一条贝叶斯链条</h2>
+</div>
+<p style="margin:0 0 12px;color:#6b7280;font-size:13px;">下图是推导路径示意，非原文插图。</p>
+<svg viewBox="0 0 1040 232" width="100%" style="display:block;background:#fff;border:1px solid #e3ddd3;border-radius:8px;">
+<defs>
+<marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#9aa3b2"/></marker>
+</defs>
+<rect x="20" y="30" width="236" height="86" rx="8" fill="#f6f4ef" stroke="#d8d2c6"/>
+<text x="36" y="56" font-size="13.5" font-weight="700" fill="#20242c">① 隐式分类器</text>
+<text x="36" y="80" font-size="13" fill="#374151">$p^i(c|z)\propto p(z|c)/p(z)$</text>
+<text x="36" y="102" font-size="12" fill="#8a7a5f">用生成模型反推的「分类器」</text>
+
+<line x1="258" y1="73" x2="298" y2="73" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#ar3)"/>
+
+<rect x="302" y="30" width="300" height="86" rx="8" fill="#fff7ec" stroke="#e6cfa6"/>
+<text x="318" y="56" font-size="13.5" font-weight="700" fill="#20242c">② 取梯度 = 两个分数之差</text>
+<text x="318" y="80" font-size="13" fill="#374151">$\nabla\log p^i=-\frac{1}{\sigma}[\,\epsilon^*(z,c)-\epsilon^*(z)\,]$</text>
+<text x="318" y="102" font-size="12" fill="#8a7a5f">分类器梯度不需要真的存在</text>
+
+<line x1="604" y1="73" x2="644" y2="73" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#ar3)"/>
+
+<rect x="648" y="30" width="372" height="86" rx="8" fill="#f0f5ff" stroke="#b6cbf5"/>
+<text x="664" y="56" font-size="13.5" font-weight="700" fill="#20242c">③ 于是式 (6) 就是引导</text>
+<text x="664" y="80" font-size="13" fill="#374151">$(1+w)\epsilon_c-w\epsilon_u=\epsilon_c-w\sigma\nabla\log p^i$</text>
+<text x="664" y="102" font-size="12" fill="#8a7a5f">$w$ 与第 19 期的 $s$ 是同一个旋钮</text>
+
+<rect x="20" y="140" width="1000" height="72" rx="8" fill="#fff" stroke="#e3b4b4" stroke-width="1.2"/>
+<text x="36" y="166" font-size="13.5" font-weight="700" fill="#b91c1c">但作者特意说明：两者不是一回事</text>
+<text x="36" y="190" font-size="13" fill="#374151">$\epsilon_\theta$ 是无约束网络的输出，一般<b>不是任何标量势的梯度</b>（非保守向量场），所以 $\tilde\epsilon_\theta$ 不存在对应的分类器 → 也就无法被解释成对分类器的对抗攻击。</text>
+</svg>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#b45309;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">04</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">FID 是 U 形，IS 是直线上升</h2>
+</div>
+<table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e3ddd3;font-size:14px;">
+<tr style="background:#f2eee6;color:#3a4150;"><th style="text-align:left;padding:9px 12px;font-weight:600;">ImageNet 128×128（$T=256$）</th><th style="padding:9px 12px;font-weight:600;">FID↓</th><th style="padding:9px 12px;font-weight:600;">IS↑</th><th style="text-align:left;padding:9px 12px;font-weight:600;">读法</th></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">$w=0$（无引导）</td><td style="padding:9px 12px;text-align:center;">7.27</td><td style="padding:9px 12px;text-align:center;">82.5</td><td style="padding:9px 12px;color:#6b7280;">基线</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#f0f5ff;"><td style="padding:9px 12px;">$w=0.3$</td><td style="padding:9px 12px;text-align:center;font-weight:700;color:#1d4ed8;">2.43</td><td style="padding:9px 12px;text-align:center;">158.5</td><td style="padding:9px 12px;color:#1d4ed8;">FID 最低点，已低于 ADM-G 的 2.97</td></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">$w=0.4$</td><td style="padding:9px 12px;text-align:center;">2.49</td><td style="padding:9px 12px;text-align:center;">183.4</td><td style="padding:9px 12px;color:#6b7280;">另一个拐点，IS 继续涨</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#fcfaf7;"><td style="padding:9px 12px;">$w=1.0$</td><td style="padding:9px 12px;text-align:center;color:#b91c1c;">7.86</td><td style="padding:9px 12px;text-align:center;">298.0</td><td style="padding:9px 12px;color:#b91c1c;">FID 已回到起点，只换来 IS</td></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">$w=3.0$</td><td style="padding:9px 12px;text-align:center;">19.77</td><td style="padding:9px 12px;text-align:center;">407.4</td><td style="padding:9px 12px;color:#0f766e;">IS 409 / FID 19.8 → 同时压过 BigGAN-deep 的最佳 IS 档（253 / 25）</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#fcfaf7;"><td style="padding:9px 12px;">$w=4.0$</td><td style="padding:9px 12px;text-align:center;">21.53</td><td style="padding:9px 12px;text-align:center;">421.0</td><td style="padding:9px 12px;color:#6b7280;">IS 见顶</td></tr>
+</table>
+<p style="margin:10px 0 0;color:#6b7280;font-size:13px;">对照：ADM-G 2.97｜CDM 3.52 / 128.8｜LOGAN 3.36 / 148.2｜BigGAN-deep 5.7 / 124.5。本文用的架构与 ADM-G 完全相同，还少了一个分类器。</p>
+<h3 style="font-size:14px;margin:16px 0 6px;font-weight:700;">64×64 上同一个规律，拐点更靠左</h3>
+<p style="margin:0;color:#4b5563;font-size:14px;">$w=0.1$ 时 FID <b>1.55</b>（ADM 2.07，CDM 1.48）；$w=0.3$ 已升到 3.03；$w=4$ 冲到 26.22 / IS 260。含义很清楚：<b>引导主要买的是 IS，FID 只在极小 $w$ 处赚一点</b>。</p>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#b45309;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">05</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">两个超参，都有自己的脾气</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;">
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #1d4ed8;border-radius:8px;padding:12px 14px;">
+<div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:4px;">$p_{uncond}$：容量的分配比例</div>
+<p style="margin:0;font-size:14px;">0.1 与 0.2 差不多；<b>0.5 在全条 IS/FID 曲线上都更差</b>。只需要很小一部分容量分给无条件任务——镜像了 ADM「小分类器就够用」的发现。</p>
+</div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #1d4ed8;border-radius:8px;padding:12px 14px;">
+<div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:4px;">$T$：256 是甜点，但速度不占优</div>
+<p style="margin:0;font-size:14px;">$T$ 从 128→256→1024，$w=0.3$ 的 FID 是 3.04 / 2.43 / 2.43。<b>公平比速度要看 $T=128$（因为每步两次前向）</b>，而那一列 3.04 其实输给 ADM-G 的 2.97。</p>
+</div>
+</div>
+</div>
+
+<div style="margin-bottom:8px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#b91c1c;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">06</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">边界：省了分类器，但没省时间，也没治好「单向旋钮」</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>每步两次前向</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">省掉一个分类器，却把生成网络跑两遍。作者自己承认公平速度口径下打不过 ADM-G。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>还是单向旋钮</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">FID 先降后升、IS 单调升；第 19 期「拿 recall 换 precision」的问题原样留着，且作者提醒多样性下降在部署中可能有害（欠代表群体首当其冲）。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>强引导可见退化</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">$w=3$ 的样本出现颜色饱和（论文 Fig.3 自己标了 saturated colors），$w\ge1$ 的 FID 已崩到 7.9–26。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>理论无保证</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">隐式分类器在模型设错时可能不一致（Grünwald &amp; Langford 2007），判别式模型通常优于生成式反推（Grandvalet &amp; Bengio 2004）——本文只有经验证据。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>实验面窄</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">只有 ImageNet 64/128 类条件；<b>没有文本条件</b>（CFG 真正封神的地方在 GLIDE/Imagen/LDM 之后），也没有 256/512。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>两条替代路都没做</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">用 $\sum_c p(x|c)p(c)$ 合成无条件分数（前向次数等于类别数）只在 §5 讨论；「把条件注入得更晚以省一次前向」留作 future work。</p></div>
+</div>
+</div>
+
+<div style="margin-top:26px;padding-top:14px;border-top:1px dashed #d8d2c6;color:#8a8f99;font-size:13px;">
+数据来源：arXiv:2207.12598（短版本见 NeurIPS 2021 Workshop on Deep Generative Models and Downstream Applications），Table 1–2、Fig. 4–5、§4.3、§5。示意图为按论文流程重绘，非原文插图。
+</div>
+
+</div>
+</div>
+</html>
