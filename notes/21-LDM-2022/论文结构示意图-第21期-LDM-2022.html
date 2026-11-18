@@ -1,0 +1,208 @@
+<html style="margin:0;padding:0;">
+<title>第21期 LDM：潜空间里做扩散（CVPR 2022 Oral）</title>
+<div style="width:100%;box-sizing:border-box;background:#faf8f5;color:#20242c;font-family:-apple-system,'PingFang SC','Helvetica Neue',Arial,sans-serif;padding:28px 20px 34px;line-height:1.62;font-size:15px;">
+
+<div style="max-width:1080px;margin:0 auto;">
+
+<div style="border-left:5px solid #1d4ed8;padding:2px 0 2px 14px;margin-bottom:22px;">
+<h1 style="font-size:23px;line-height:1.35;margin:0 0 6px;font-weight:700;">把像素让给自编码器：在 64×64 的潜空间里做完整个扩散</h1>
+<p style="margin:0;color:#5b6472;font-size:14px;">Rombach, Blattmann, Lorenz, Esser, Ommer ｜ CVPR 2022 Oral ｜ ImageNet 256 类条件 FID 3.60（ADM-G 4.59），参数 400M vs 608M</p>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px;">
+<span style="background:#fff;border:1px solid #e3ddd3;border-radius:16px;padding:3px 11px;font-size:12.5px;color:#5b6472;">17 DDPM · 目标函数</span>
+<span style="color:#b8b2a7;">→</span>
+<span style="background:#fff;border:1px solid #e3ddd3;border-radius:16px;padding:3px 11px;font-size:12.5px;color:#5b6472;">18 DDIM · 少步采样</span>
+<span style="color:#b8b2a7;">→</span>
+<span style="background:#fff;border:1px solid #e3ddd3;border-radius:16px;padding:3px 11px;font-size:12.5px;color:#5b6472;">19 ADM · 架构与引导</span>
+<span style="color:#b8b2a7;">→</span>
+<span style="background:#fff;border:1px solid #e3ddd3;border-radius:16px;padding:3px 11px;font-size:12.5px;color:#5b6472;">20 CFG · 扔掉分类器</span>
+<span style="color:#b8b2a7;">→</span>
+<span style="background:#1d4ed8;color:#fff;border-radius:16px;padding:3px 11px;font-size:12.5px;font-weight:700;">21 LDM · 装成一台机器</span>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:30px;">
+<div style="flex:1 1 300px;box-sizing:border-box;background:#fff;border:1px solid #e3ddd3;border-radius:10px;padding:14px 16px;">
+<div style="font-size:13px;letter-spacing:.08em;color:#1d4ed8;font-weight:700;margin-bottom:4px;">两个阶段，只训一次</div>
+<p style="margin:0;">自编码器只负责“看起来像”（感知损失 + patch 判别器），扩散模型只管“画什么”。图像只在 <b>编码</b> 与 <b>解码</b> 各过一次。</p>
+</div>
+<div style="flex:1 1 300px;box-sizing:border-box;background:#fff;border:1px solid #e3ddd3;border-radius:10px;padding:14px 16px;">
+<div style="font-size:13px;letter-spacing:.08em;color:#b45309;font-weight:700;margin-bottom:4px;">一个接口，五类任务</div>
+<p style="margin:0;">交叉注意力把任意 token 序列接进 UNet 中间层：文本、布局、类别走一条路；低分图、mask、语义图走拼接。</p>
+</div>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#20242c;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">01</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">压缩压过头，质量就锁死了</h2>
+</div>
+<p style="margin:0 0 12px;color:#6b7280;font-size:13px;">下图为率—失真关系的结构示意（非原文 Fig.2 复刻）；两个区分别是“感知压缩”与“语义压缩”该待的地方。</p>
+<svg viewBox="0 0 1040 300" width="100%" style="display:block;background:#fff;border:1px solid #e3ddd3;border-radius:8px;">
+<line x1="86" y1="248" x2="960" y2="248" stroke="#c9c2b6" stroke-width="1.4"/>
+<line x1="86" y1="248" x2="86" y2="34" stroke="#c9c2b6" stroke-width="1.4"/>
+<text x="470" y="280" font-size="13" fill="#6b7280" text-anchor="middle">率 rate（bits / dim）→</text>
+<text x="76" y="150" font-size="13" fill="#6b7280" text-anchor="middle" transform="rotate(-90 76 150)">失真（RMSE）→</text>
+<text x="120" y="60" font-size="12.5" fill="#6b7280">高失真</text>
+<text x="120" y="238" font-size="12.5" fill="#6b7280">低失真</text>
+<path d="M150,232 C170,150 200,60 250,40 C300,26 330,44 360,96" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+<circle cx="150" cy="232" r="4" fill="#1d4ed8"/>
+<text x="164" y="226" font-size="12.5" fill="#1d4ed8">f=4 自编码器</text>
+<text x="164" y="208" font-size="12" fill="#8a8f99">R-FID 0.58 / PSNR 27.4</text>
+<path d="M360,96 C420,120 480,150 560,168 C680,190 820,200 940,204" fill="none" stroke="#b45309" stroke-width="3"/>
+<circle cx="520" cy="158" r="4" fill="#b45309"/>
+<text x="534" y="152" font-size="12.5" fill="#b45309">f=8（DALL-E）</text>
+<text x="534" y="134" font-size="12" fill="#8a8f99">R-FID 32.01 / PSNR 22.8</text>
+<circle cx="820" cy="200" r="4" fill="#b45309"/>
+<text x="836" y="194" font-size="12.5" fill="#b45309">f=16（VQGAN）</text>
+<text x="836" y="176" font-size="12" fill="#8a8f99">R-FID 4.98 / PSNR 19.9</text>
+<text x="270" y="86" font-size="12.5" fill="#1d4ed8" font-weight="700">语义压缩区</text>
+<text x="290" y="104" font-size="12" fill="#8a8f99">陡：少量比特换大量失真下降</text>
+<text x="700" y="150" font-size="12.5" fill="#b45309" font-weight="700">感知压缩区</text>
+<text x="700" y="168" font-size="12" fill="#8a8f99">平：再加比特也换不回细节</text>
+<rect x="860" y="34" width="160" height="46" rx="6" fill="#fff7ec" stroke="#e6cfa6"/>
+<text x="872" y="54" font-size="12" fill="#8a6a3a">压太狠 → 信息丢</text>
+<text x="872" y="72" font-size="12" fill="#8a6a3a">→ 生成上限被锁死</text>
+</svg>
+<p style="margin:10px 0 0;color:#6b7280;font-size:13px;">所以本文不去压到 16 倍，而停在 <b>4–8 倍</b>：把感知冗余剥掉，语义留给扩散模型。这也解释了 $f=32$ 为什么训练几步就停滞。</p>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#1d4ed8;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">02</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">流水线：图像只碰两次，中间全是小张量</h2>
+</div>
+<p style="margin:0 0 12px;color:#6b7280;font-size:13px;">按论文 §3 重绘的流程示意，非原文插图；箭头为数据流向，虚线为条件注入。</p>
+<svg viewBox="0 0 1040 340" width="100%" style="display:block;background:#fff;border:1px solid #e3ddd3;border-radius:8px;">
+<defs>
+<marker id="arl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#9aa3b2"/></marker>
+<marker id="arl2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b45309"/></marker>
+</defs>
+
+<text x="20" y="26" font-size="12.5" font-weight="700" fill="#5b6472">像素空间</text>
+<rect x="20" y="38" width="150" height="76" rx="8" fill="#f6f4ef" stroke="#d8d2c6"/>
+<text x="36" y="66" font-size="13.5" fill="#20242c">图像 x</text>
+<text x="36" y="88" font-size="12" fill="#8a8f99">256×256×3</text>
+<text x="36" y="104" font-size="12" fill="#8a8f99">（512² 亦可）</text>
+
+<line x1="172" y1="76" x2="206" y2="76" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#arl)"/>
+<rect x="210" y="38" width="86" height="76" rx="8" fill="#f0f5ff" stroke="#b6cbf5"/>
+<text x="253" y="70" font-size="14" fill="#1d4ed8" text-anchor="middle" font-weight="700">E</text>
+<text x="253" y="92" font-size="11.5" fill="#6b7280" text-anchor="middle">编码器</text>
+
+<line x1="298" y1="76" x2="336" y2="76" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#arl)"/>
+<text x="20" y="146" font-size="12.5" font-weight="700" fill="#1d4ed8">潜空间（f=4）</text>
+<rect x="340" y="38" width="104" height="76" rx="8" fill="#eef3ff" stroke="#9fbdf0"/>
+<text x="392" y="62" font-size="13.5" fill="#20242c" text-anchor="middle">z 64×64×3</text>
+<text x="392" y="84" font-size="12" fill="#5b6472" text-anchor="middle">|Z|=8192</text>
+<text x="392" y="104" font-size="11.5" fill="#8a8f99" text-anchor="middle">比像素小 16×</text>
+
+<line x1="446" y1="76" x2="486" y2="76" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#arl)"/>
+<rect x="490" y="26" width="330" height="118" rx="8" fill="#fff" stroke="#c9c2b6" stroke-width="1.2"/>
+<text x="506" y="48" font-size="13" font-weight="700" fill="#20242c">去噪 UNet ε_θ(z_t, t, τ(y))</text>
+<rect x="506" y="62" width="92" height="30" rx="5" fill="#f0f5ff" stroke="#b6cbf5"/>
+<text x="552" y="82" font-size="12" fill="#1d4ed8" text-anchor="middle">Q 自特征</text>
+<rect x="608" y="62" width="100" height="30" rx="5" fill="#fff7ec" stroke="#e6cfa6"/>
+<text x="658" y="82" font-size="12" fill="#8a6a3a" text-anchor="middle">K / V 自条件</text>
+<text x="506" y="114" font-size="12" fill="#8a8f99">时间条件 + 跳连，骨干仍是 2D 卷积</text>
+<text x="506" y="134" font-size="12" fill="#8a8f99">T=1000 训练；采样走 DDIM 100–250 步</text>
+
+<line x1="820" y1="76" x2="858" y2="76" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#arl)"/>
+<rect x="862" y="38" width="86" height="76" rx="8" fill="#f0f5ff" stroke="#b6cbf5"/>
+<text x="905" y="70" font-size="14" fill="#1d4ed8" text-anchor="middle" font-weight="700">D</text>
+<text x="905" y="92" font-size="11.5" fill="#6b7280" text-anchor="middle">解码器</text>
+<line x1="948" y1="76" x2="978" y2="76" stroke="#9aa3b2" stroke-width="1.6" marker-end="url(#arl)"/>
+<text x="982" y="72" font-size="13" fill="#20242c">x̃</text>
+
+<rect x="700" y="152" width="322" height="50" rx="8" fill="#fff7ec" stroke="#e6cfa6"/>
+<text x="714" y="172" font-size="12.5" font-weight="700" fill="#8a6a3a">条件 y</text>
+<text x="714" y="192" font-size="12" fill="#8a6a3a">文本 / 布局 / 类别 → τ_θ(y) ∈ R^(M×d)</text>
+<line x1="700" y1="176" x2="660" y2="96" stroke="#b45309" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arl2)"/>
+
+<text x="20" y="190" font-size="12.5" font-weight="700" fill="#5b6472">另一种接法</text>
+<rect x="20" y="198" width="600" height="52" rx="8" fill="#f6f4ef" stroke="#d8d2c6"/>
+<text x="34" y="220" font-size="12.5" fill="#20242c">空间对齐条件（低分图 / mask / 语义图）</text>
+<text x="34" y="240" font-size="12" fill="#8a8f99">τ_θ 取恒等映射，直接与 z 拼接后进 UNet</text>
+
+<rect x="20" y="266" width="1002" height="56" rx="8" fill="#f0f5ff" stroke="#b6cbf5"/>
+<text x="36" y="290" font-size="13" font-weight="700" fill="#1d4ed8">省下来的到底是什么</text>
+<text x="36" y="310" font-size="13" fill="#374151">高维像素上的梯度与前向 → 64×64×3 上的梯度与前向。同等参数下训练快约 2.9×、采样快约 3.7×（Tab.6），而步数一步没少。</text>
+</svg>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#1d4ed8;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">03</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">条件从哪进：按“是否空间对齐”二分</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;">
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b45309;border-radius:8px;padding:13px 15px;">
+<div style="font-size:13px;font-weight:700;color:#b45309;margin-bottom:5px;">拼接（concat）｜条件与 z 同一张画布</div>
+<p style="margin:0 0 6px;font-size:14px;">τ_θ 取恒等映射，把降采样的条件与 z 在通道维拼起来。适用于<b>逐像素对齐</b>的条件：超分低分图、修补 mask、语义分割图。</p>
+<p style="margin:0;font-size:13.5px;color:#6b7280;">好处：能用卷积式采样外推到 512×1024 甚至百万像素。</p>
+</div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #1d4ed8;border-radius:8px;padding:13px 15px;">
+<div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:5px;">交叉注意力｜条件是一串 token</div>
+<p style="margin:0 0 6px;font-size:14px;">$Q=W_Q\varphi_i(z_t),\ K=W_K\tau_\theta(y),\ V=W_V\tau_\theta(y)$，softmax 后加权回特征。适用于<b>不定长序列</b>：文本、布局框、类别嵌入。</p>
+<p style="margin:0;font-size:13.5px;color:#6b7280;">好处：τ_θ 可换专家（文本用无 mask transformer，输出 1280 维），与 ε_θ 联合训练。</p>
+</div>
+</div>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#b45309;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">04</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">f 是一条可扫的曲线，甜点在 4–8</h2>
+</div>
+<table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e3ddd3;font-size:14px;">
+<tr style="background:#f2eee6;color:#3a4150;"><th style="text-align:left;padding:9px 12px;font-weight:600;">f</th><th style="text-align:left;padding:9px 12px;font-weight:600;">潜空间（256² 输入）</th><th style="text-align:left;padding:9px 12px;font-weight:600;">2M 步后的表现</th><th style="text-align:left;padding:9px 12px;font-weight:600;">判定</th></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">1（像素基线）</td><td style="padding:9px 12px;">256×256×3</td><td style="padding:9px 12px;">训练极慢，FID 比 LDM-8 高 <b>38</b></td><td style="padding:9px 12px;color:#b91c1c;">太重</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#fcfaf7;"><td style="padding:9px 12px;">2</td><td style="padding:9px 12px;">128×128×2</td><td style="padding:9px 12px;">仍偏慢，吞吐吃亏</td><td style="padding:9px 12px;color:#b91c1c;">偏重</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#f0f5ff;"><td style="padding:9px 12px;font-weight:700;">4</td><td style="padding:9px 12px;">64×64×3</td><td style="padding:9px 12px;">重建最好（R-FID 0.58），类条件主用</td><td style="padding:9px 12px;color:#1d4ed8;font-weight:700;">甜点</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#f0f5ff;"><td style="padding:9px 12px;font-weight:700;">8</td><td style="padding:9px 12px;">32×32×4</td><td style="padding:9px 12px;">效率最高，文本/无条件常用</td><td style="padding:9px 12px;color:#1d4ed8;font-weight:700;">甜点</td></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">16</td><td style="padding:9px 12px;">16×16×8</td><td style="padding:9px 12px;">可用，细节开始吃亏</td><td style="padding:9px 12px;color:#8a6a3a;">勉强</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#fcfaf7;"><td style="padding:9px 12px;">32</td><td style="padding:9px 12px;">8×8×32</td><td style="padding:9px 12px;">几步之后停滞，再加步数也不涨</td><td style="padding:9px 12px;color:#b91c1c;">压缩过头</td></tr>
+</table>
+<p style="margin:10px 0 0;color:#6b7280;font-size:13px;">同一张 A100、同样步数、同样参数量下的对照（Fig.6 / Tab.13）。注意 LDM-32 的失败方式很特别：<b>不是训不动，是很快就到顶了</b>——信息在编码器里已经丢了，扩散模型再努力也补不回来。</p>
+</div>
+
+<div style="margin-bottom:30px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#1d4ed8;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">05</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">五类任务，七组数字：赢在哪、输在哪</h2>
+</div>
+<table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #e3ddd3;font-size:14px;">
+<tr style="background:#f2eee6;color:#3a4150;"><th style="text-align:left;padding:9px 12px;font-weight:600;">任务</th><th style="text-align:left;padding:9px 12px;font-weight:600;">LDM</th><th style="text-align:left;padding:9px 12px;font-weight:600;">最强对手</th><th style="text-align:left;padding:9px 12px;font-weight:600;">对比要点</th></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">CelebA-HQ 256 无条件</td><td style="padding:9px 12px;"><b>FID 5.11</b>（500 步 DDIM）</td><td style="padding:9px 12px;">LSGM 7.22 / UDM 7.16 / PGGAN 8.0</td><td style="padding:9px 12px;color:#1d4ed8;">赢</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#fcfaf7;"><td style="padding:9px 12px;">FFHQ 256 无条件</td><td style="padding:9px 12px;">FID 4.98（P 0.73 / R 0.50）</td><td style="padding:9px 12px;">ProjectedGAN 3.08 / StyleGAN 4.16</td><td style="padding:9px 12px;color:#8a6a3a;">FID 输，覆盖更均衡</td></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">LSUN-Bedrooms 256</td><td style="padding:9px 12px;">FID 2.95</td><td style="padding:9px 12px;">ADM 1.90</td><td style="padding:9px 12px;color:#0f766e;">约半参数 / 1/4 训练资源</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#f0f5ff;"><td style="padding:9px 12px;">ImageNet 256 类条件</td><td style="padding:9px 12px;"><b>FID 3.60 / IS 247.7</b>（c.f.g. s=1.5）</td><td style="padding:9px 12px;">ADM-G 4.59 / 186.7</td><td style="padding:9px 12px;color:#1d4ed8;">400M vs 608M</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#fff7ec;"><td style="padding:9px 12px;">MS-COCO 256 文本生图</td><td style="padding:9px 12px;">FID <b>12.63</b> / IS <b>30.29</b>（s=1.5）</td><td style="padding:9px 12px;">GLIDE 12.24（6B）/ Make-A-Scene 11.84（4B）</td><td style="padding:9px 12px;color:#b45309;">1.45B：FID 略输，IS 反超</td></tr>
+<tr style="border-top:1px solid #eee8de;"><td style="padding:9px 12px;">超分 64→256</td><td style="padding:9px 12px;">FID <b>2.8</b>/4.8，PSNR 24.4</td><td style="padding:9px 12px;">SR3 FID 5.2，PSNR 26.4</td><td style="padding:9px 12px;color:#0f766e;">169M vs 625M，PSNR 吃亏</td></tr>
+<tr style="border-top:1px solid #eee8de;background:#fcfaf7;"><td style="padding:9px 12px;">修补 Places 512²</td><td style="padding:9px 12px;">FID <b>1.50</b>（硬样本 9.39）</td><td style="padding:9px 12px;">LaMa 2.21 / 12.0</td><td style="padding:9px 12px;color:#1d4ed8;">387M，用户研究 68.1% vs 31.9%</td></tr>
+</table>
+<p style="margin:10px 0 0;color:#6b7280;font-size:13px;">四张原始表：Tab.1（无条件）、Tab.3（ImageNet）、Tab.2（文本）、Tab.5/7（超分与修补）。<b>最有信息量的一行是文本生图</b>：不加引导 FID 23.31，加 s=1.5 变 12.63——一个标量换了 10.7 个点。</p>
+</div>
+
+<div style="margin-bottom:8px;">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+<span style="display:inline-block;background:#b91c1c;color:#fff;border-radius:5px;padding:1px 8px;font-size:13px;font-weight:700;">06</span>
+<h2 style="font-size:17px;margin:0;font-weight:700;">边界：省了算力，没省步数，也没解决组合性</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;">
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>采样仍慢于 GAN</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">每步仍要一次全网络前向，100–250 步的 DDIM 在交互式应用里还是硬伤。潜空间让每步更便宜，没有减少步数。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>重建误差是硬天花板</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">R-FID 0.58 对感知无损，对像素精度有损。超分 PSNR/SSIM 全线输给回归与 SR3，作者自己承认“已受此限制”。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>两阶段新增手调维度</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">f 要扫、KL/VQ 要选、潜空间要按标准差重标定（§D.1，不标定卷积外推直接崩）。这些都是实验试出来的。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>文本条件只是“能打平”</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">FID 12.63 仍高于 GLIDE 的 12.24；且只在 MS-COCO 短标题上测，属性绑定、数量、空间关系这类组合性完全没验。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>GAN 在 FID 上仍守得住</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">FFHQ 输 ProjectedGAN 3.08、Churches 输 ProjectedGAN 1.59、Bedrooms 输 ADM 1.90。本文赢的是“覆盖率 + 通用性 + 成本”，不是全面碾压。</p></div>
+<div style="background:#fff;border:1px solid #e3ddd3;border-left:4px solid #b91c1c;border-radius:8px;padding:11px 13px;"><b>社会影响只提问题</b><p style="margin:4px 0 0;font-size:14px;color:#4b5563;">deepfake（点名“女性受影响不成比例”）、训练数据被反演、偏见复制——三条都停在“重要研究问题”，没有缓解方案。</p></div>
+</div>
+</div>
+
+<div style="margin-top:26px;padding-top:14px;border-top:1px dashed #d8d2c6;color:#8a8f99;font-size:13px;">
+数据来源：arXiv:2112.10752v2（CVPR 2022 Oral，DOI 10.1109/CVPR52688.2022.01042），Tab.1–3、5–7、13 及 Fig.1、6、7、9。示意图按论文 §3 流程重绘，非原文插图。
+</div>
+
+</div>
+</div>
+</html>
