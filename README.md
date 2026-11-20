@@ -3,7 +3,7 @@
 > AI 学习视角的结构化论文精读归档：每两天一篇，由豆包定时任务自动检索、精读并推送。
 > 每期产出：结构化阅读笔记（Markdown）+ 论文结构示意图（HTML）。
 ![更新频率](https://img.shields.io/badge/%E6%9B%B4%E6%96%B0-%E6%AF%8F%E4%B8%A4%E5%A4%A9%E4%B8%80%E6%9C%9F-orange)
-![论文数量](https://img.shields.io/badge/%E8%AE%BA%E6%96%87-21%E7%AF%87-blue)
+![论文数量](https://img.shields.io/badge/%E8%AE%BA%E6%96%87-22%E7%AF%87-blue)
 ![选题策略](https://img.shields.io/badge/%E9%80%89%E9%A2%98-%E5%85%88%E7%BB%BC%E8%BF%B0%E5%90%8E%E7%BB%8F%E5%85%B8-brightgreen)
 ![开源协议](https://img.shields.io/badge/License-MIT-green)
 ## 仓库内容
@@ -30,6 +30,7 @@
 | 第 19 期 | Diffusion Models Beat GANs on Image Synthesis（Dhariwal & Nichol, NeurIPS 2021） | 范式·生成模型（架构与引导） | 中级 | 已完成 |
 | 第 20 期 | Classifier-Free Diffusion Guidance（Ho & Salimans, NeurIPS 2021 Workshop / arXiv 2022） | 范式·生成模型（无分类器引导） | 中级 | 已完成 |
 | 第 21 期 | High-Resolution Image Synthesis with Latent Diffusion Models（Rombach et al., CVPR 2022 Oral） | 范式·生成模型（潜空间扩散与通用条件接口） | 中级 | 已完成 |
+| 第 22 期 | Diffusion Policy: Visuomotor Policy Learning via Action Diffusion（Chi et al., RSS 2023 / IJRR 2025） | 前沿·机器人学习（扩散策略） | 中级 | 已完成 |
 > 后续每期生成后会自动追加本表。
 ## 每期交付物
 进入 `notes/<期数>-<论文简称>/` 目录查看：
@@ -59,6 +60,7 @@
 - [x] 范式：生成模型 · 架构与分类器引导（ADM, NeurIPS 2021）
 - [x] 范式：生成模型 · 无分类器引导（CFG, NeurIPS 2021 Workshop）
 - [x] 范式：生成模型 · 潜空间扩散（LDM, CVPR 2022 Oral）
+- [x] 前沿：机器人策略 · 扩散策略（Diffusion Policy, RSS 2023）
 ## 选题策略
 - 难度：从基础入门论文开始，随期数递增；
 - 方向：深度学习基础、移动机器人覆盖路径规划、AI 伦理与监管、社交媒体与青少年福祉；
@@ -104,7 +106,8 @@
 │   ├── 18-DDIM-2021/
 │   ├── 19-ADM-2021/
 │   ├── 20-CFG-2022/
-│   └── 21-LDM-2022/
+│   ├── 21-LDM-2022/
+│   └── 22-DiffusionPolicy-2023/
 └── skills/                 # 配套开源 Skill
     └── efficient-paper-reading/
         ├── SKILL.md
