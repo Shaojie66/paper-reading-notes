@@ -1,0 +1,212 @@
+<html style="margin:0;padding:0;">
+<title>第22期 Diffusion Policy 论文结构示意图</title>
+<div style="width:100%;box-sizing:border-box;margin:0;padding:28px 20px 40px;background:#fbfbfd;color:#1a1a1a;font-family:-apple-system,'Segoe UI','PingFang SC','Noto Sans CJK SC',sans-serif;line-height:1.6;">
+<div style="max-width:1080px;margin:0 auto;">
+
+  <div style="border-left:4px solid #1f6feb;padding-left:14px;margin-bottom:8px;">
+    <h1 style="font-size:24px;margin:0 0 6px;">Diffusion Policy：把策略变成一次带噪梯度下降</h1>
+    <div style="font-size:14px;color:#555;">Chi, Xu, Feng, Cousineau, Du, Burchfiel, Tedrake, Song　｜　RSS 2023（扩展版 IJRR 2025）　｜　15 任务 / 4 benchmark，平均相对提升 46.9%</div>
+  </div>
+  <div style="font-size:13px;color:#777;margin-bottom:26px;">本图为论文结构示意（归纳整理），非原文原图。</div>
+
+  <section style="margin-bottom:30px;">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+      <span style="font:600 12px/1 ui-monospace,Menlo,monospace;color:#fff;background:#1f6feb;padding:4px 7px;border-radius:4px;">01</span>
+      <h2 style="font-size:18px;margin:0;">五代策略表示，各自的失败模式</h2>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+      <div style="flex:1 1 190px;min-width:180px;background:#fff;border:1px solid #e3e6ea;border-top:3px solid #b9c0c9;border-radius:8px;padding:12px 14px;">
+        <div style="font-weight:600;font-size:15px;">显式回归</div>
+        <div style="font:12px/1.5 ui-monospace,Menlo,monospace;color:#666;margin:4px 0 6px;">a = F(o)，MSE</div>
+        <div style="font-size:13px;color:#b3261e;">多模态下取均值，卡在中间</div>
+      </div>
+      <div style="flex:1 1 190px;min-width:180px;background:#fff;border:1px solid #e3e6ea;border-top:3px solid #b9c0c9;border-radius:8px;padding:12px 14px;">
+        <div style="font-weight:600;font-size:15px;">离散分类</div>
+        <div style="font:12px/1.5 ui-monospace,Menlo,monospace;color:#666;margin:4px 0 6px;">动作 → bin</div>
+        <div style="font-size:13px;color:#b3261e;">bin 数随维度指数增长</div>
+      </div>
+      <div style="flex:1 1 190px;min-width:180px;background:#fff;border:1px solid #e3e6ea;border-top:3px solid #b9c0c9;border-radius:8px;padding:12px 14px;">
+        <div style="font-weight:600;font-size:15px;">混合密度 GMM / MDN</div>
+        <div style="font:12px/1.5 ui-monospace,Menlo,monospace;color:#666;margin:4px 0 6px;">Σ πk N(μk, Σk)</div>
+        <div style="font-size:13px;color:#b3261e;">要预设模态数，易塌缩，精度不足</div>
+      </div>
+      <div style="flex:1 1 190px;min-width:180px;background:#fff;border:1px solid #e3e6ea;border-top:3px solid #b9c0c9;border-radius:8px;padding:12px 14px;">
+        <div style="font-weight:600;font-size:15px;">隐式 EBM</div>
+        <div style="font:12px/1.5 ui-monospace,Menlo,monospace;color:#666;margin:4px 0 6px;">p ∝ exp(−E)</div>
+        <div style="font-size:13px;color:#b3261e;">要估配分函数 Z、负采样，训练震荡</div>
+      </div>
+      <div style="flex:1 1 210px;min-width:200px;background:#f3f8ff;border:1px solid #bcd4f7;border-top:3px solid #1f6feb;border-radius:8px;padding:12px 14px;">
+        <div style="font-weight:600;font-size:15px;">扩散策略（本文）</div>
+        <div style="font:12px/1.5 ui-monospace,Menlo,monospace;color:#1f6feb;margin:4px 0 6px;">学 ∇log p(a|o)，迭代去噪</div>
+        <div style="font-size:13px;color:#12503f;">多模态 + 高维 + 稳定，一次拿到</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:#555;margin-top:10px;">核心判断：瓶颈在<b>策略的表示形式</b>，不在数据量。前四类都受「单步、单峰」约束。</div>
+  </section>
+
+  <section style="margin-bottom:30px;">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+      <span style="font:600 12px/1 ui-monospace,Menlo,monospace;color:#fff;background:#1f6feb;padding:4px 7px;border-radius:4px;">02</span>
+      <h2 style="font-size:18px;margin:0;">一次推理的完整流水线</h2>
+    </div>
+    <div style="background:#fff;border:1px solid #e3e6ea;border-radius:10px;padding:8px 4px;">
+      <svg viewBox="0 0 1000 340" style="width:100%;display:block;" role="img" aria-label="观测只编码一次作为条件，动作序列经K步去噪后执行前8步并闭环重规划">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#1f6feb"/>
+          </marker>
+          <marker id="arg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#8c959f"/>
+          </marker>
+        </defs>
+
+        <rect x="24" y="56" width="150" height="76" rx="8" fill="#eef4ff" stroke="#1f6feb"/>
+        <text x="99" y="82" text-anchor="middle" font-size="16" font-weight="600">观测 O_t</text>
+        <text x="99" y="104" text-anchor="middle" font-size="12" fill="#555">2 路相机 + 本体</text>
+        <text x="99" y="122" text-anchor="middle" font-size="12" fill="#777">T_o = 2 帧</text>
+
+        <rect x="216" y="56" width="164" height="76" rx="8" fill="#fff" stroke="#8c959f"/>
+        <text x="298" y="82" text-anchor="middle" font-size="15" font-weight="600">ResNet-18 编码</text>
+        <text x="298" y="104" text-anchor="middle" font-size="12" fill="#555">spatial softmax</text>
+        <text x="298" y="122" text-anchor="middle" font-size="12" fill="#777">GroupNorm，端到端</text>
+
+        <rect x="422" y="56" width="152" height="76" rx="8" fill="#f3f8ff" stroke="#1f6feb"/>
+        <text x="498" y="82" text-anchor="middle" font-size="15" font-weight="600" fill="#1f6feb">条件 c</text>
+        <text x="498" y="104" text-anchor="middle" font-size="12" fill="#555">只编码 1 次</text>
+        <text x="498" y="122" text-anchor="middle" font-size="12" fill="#777">与去噪步数无关</text>
+
+        <line x1="174" y1="94" x2="212" y2="94" stroke="#1f6feb" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="380" y1="94" x2="418" y2="94" stroke="#1f6feb" stroke-width="2" marker-end="url(#ar)"/>
+
+        <rect x="24" y="222" width="150" height="66" rx="8" fill="#f6f6f8" stroke="#8c959f"/>
+        <text x="99" y="248" text-anchor="middle" font-size="15" font-weight="600">A_t^K ~ N(0, I)</text>
+        <text x="99" y="270" text-anchor="middle" font-size="12" fill="#777">整段动作的纯噪声</text>
+
+        <rect x="216" y="200" width="270" height="96" rx="8" fill="#fff" stroke="#1f6feb" stroke-width="2"/>
+        <text x="351" y="228" text-anchor="middle" font-size="15" font-weight="600">ε_θ(O_t, A_t^k, k)</text>
+        <text x="351" y="250" text-anchor="middle" font-size="12" fill="#555">预测噪声 = 能量梯度场</text>
+        <text x="351" y="272" text-anchor="middle" font-size="11" fill="#777">CNN + FiLM　或　时序 Transformer</text>
+
+        <line x1="174" y1="255" x2="212" y2="255" stroke="#1f6feb" stroke-width="2" marker-end="url(#ar)"/>
+        <path d="M498,136 L498,172 L351,172 L351,196" fill="none" stroke="#1f6feb" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+        <text x="440" y="166" font-size="11" fill="#1f6feb">条件注入</text>
+
+        <rect x="528" y="222" width="150" height="66" rx="8" fill="#f3f8ff" stroke="#1f6feb"/>
+        <text x="603" y="248" text-anchor="middle" font-size="15" font-weight="600">A_t^0</text>
+        <text x="603" y="270" text-anchor="middle" font-size="12" fill="#555">16 × D 动作序列</text>
+
+        <rect x="724" y="222" width="176" height="66" rx="8" fill="#f2fbf6" stroke="#1a7f5a"/>
+        <text x="812" y="248" text-anchor="middle" font-size="15" font-weight="600" fill="#1a7f5a">执行前 T_a = 8 步</text>
+        <text x="812" y="270" text-anchor="middle" font-size="12" fill="#555">其余丢弃，进入下一轮</text>
+
+        <line x1="486" y1="255" x2="524" y2="255" stroke="#1f6feb" stroke-width="2" marker-end="url(#ar)"/>
+        <line x1="678" y1="255" x2="720" y2="255" stroke="#1f6feb" stroke-width="2" marker-end="url(#ar)"/>
+
+        <path d="M812,288 L812,318 L99,318 L99,136" fill="none" stroke="#8c959f" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#arg)"/>
+        <text x="450" y="332" text-anchor="middle" font-size="12" fill="#666">闭环 · 滚动时域：重新观测 → 重新编码 → 重新规划</text>
+
+        <text x="351" y="188" text-anchor="middle" font-size="11" fill="#777">K 步去噪（训练 100 / 推理 10–16 步，DDIM）</text>
+      </svg>
+    </div>
+  </section>
+
+  <section style="margin-bottom:30px;">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+      <span style="font:600 12px/1 ui-monospace,Menlo,monospace;color:#fff;background:#1f6feb;padding:4px 7px;border-radius:4px;">03</span>
+      <h2 style="font-size:18px;margin:0;">为什么不需要配分函数 Z：一条恒等式</h2>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;">
+      <div style="flex:1 1 320px;min-width:280px;background:#fff;border:1px solid #e3e6ea;border-radius:8px;padding:14px 16px;">
+        <div style="font-weight:600;font-size:15px;color:#b3261e;">隐式策略（EBM）</div>
+        <div style="font:13px/1.7 ui-monospace,Menlo,monospace;margin:8px 0;">p(a|o) = exp(−E(o,a)) / Z(o)</div>
+        <div style="font-size:13px;color:#555;">训练要用 InfoNCE 抽负样本估计 Z；估计不准 → 损失尖刺、评估震荡、选 checkpoint 变成碰运气（IBC 实测如此）。</div>
+      </div>
+      <div style="flex:1 1 320px;min-width:280px;background:#f3f8ff;border:1px solid #bcd4f7;border-radius:8px;padding:14px 16px;">
+        <div style="font-weight:600;font-size:15px;color:#1f6feb;">扩散策略</div>
+        <div style="font:13px/1.7 ui-monospace,Menlo,monospace;margin:8px 0;">∇log p = −∇E − ∇log Z</div>
+        <div style="font:13px/1.7 ui-monospace,Menlo,monospace;margin:8px 0;color:#1a7f5a;">∇log Z = 0（对动作求导）</div>
+        <div style="font-size:13px;color:#555;">所以 ε_θ 直接拟合 −∇log p 即可，训练与采样都不碰 Z。这就是「稳定」的来源，不是调参调出来的。</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:#555;margin-top:10px;">下一步的读法：DDPM 那一步采样公式，其实就是在能量面上做一次带噪梯度下降；噪声预测网络 = 学出来的梯度场。</div>
+  </section>
+
+  <section style="margin-bottom:30px;">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+      <span style="font:600 12px/1 ui-monospace,Menlo,monospace;color:#fff;background:#1f6feb;padding:4px 7px;border-radius:4px;">04</span>
+      <h2 style="font-size:18px;margin:0;">三个工程决定，撑起「能上真机」</h2>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;">
+      <div style="flex:1 1 280px;min-width:250px;background:#fff;border:1px solid #e3e6ea;border-radius:8px;padding:14px 16px;">
+        <div style="font-weight:600;font-size:15px;">滚动时域（receding horizon）</div>
+        <div style="font:12px/1.8 ui-monospace,Menlo,monospace;color:#1f6feb;margin:6px 0;">T_o = 2　T_p = 16　T_a = 8</div>
+        <div style="font-size:13px;color:#555;">预测 16 步、只执行 8 步。消融：8 步最优；1 步丢时序一致性，128 步反应太慢。</div>
+      </div>
+      <div style="flex:1 1 280px;min-width:250px;background:#fff;border:1px solid #e3e6ea;border-radius:8px;padding:14px 16px;">
+        <div style="font-weight:600;font-size:15px;">观测只做条件</div>
+        <div style="font-size:13px;color:#555;margin-top:6px;">与 Diffuser 的联合建模相对：视觉编码只跑一次，省算力，还能端到端训练编码器；推理 0.1 s（3080）。</div>
+      </div>
+      <div style="flex:1 1 280px;min-width:250px;background:#fff;border:1px solid #e3e6ea;border-radius:8px;padding:14px 16px;">
+        <div style="font-weight:600;font-size:15px;">位置控制优先</div>
+        <div style="font-size:13px;color:#555;margin-top:6px;">反当时惯例：DP 用位置控制更好（Square +0.2、Kitchen p4 +0.95 相对提升），基线换位置控制反而掉分。</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin-bottom:30px;">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+      <span style="font:600 12px/1 ui-monospace,Menlo,monospace;color:#fff;background:#1f6feb;padding:4px 7px;border-radius:4px;">05</span>
+      <h2 style="font-size:18px;margin:0;">数字对照（成功率；state 任务写作 max / 末 10 个 checkpoint 均值）</h2>
+    </div>
+    <div style="overflow-x:auto;background:#fff;border:1px solid #e3e6ea;border-radius:8px;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:640px;">
+        <thead>
+          <tr style="background:#f5f7fa;text-align:left;">
+            <th style="padding:10px 12px;border-bottom:1px solid #e3e6ea;">任务</th>
+            <th style="padding:10px 12px;border-bottom:1px solid #e3e6ea;">最佳基线</th>
+            <th style="padding:10px 12px;border-bottom:1px solid #e3e6ea;">DP-CNN</th>
+            <th style="padding:10px 12px;border-bottom:1px solid #e3e6ea;">DP-Transformer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">Transport（state）</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">0.76 / 0.47</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">0.94 / 0.82</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;font-weight:600;">1.00 / 0.84</td></tr>
+          <tr><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">Transport（visual）</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">0.44 / 0.24</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;font-weight:600;">0.89 / 0.69</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">0.73 / 0.50</td></tr>
+          <tr><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">ToolHang（state）</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">0.67 / 0.31</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;color:#b3261e;">0.50 / 0.30</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;font-weight:600;">1.00 / 0.87</td></tr>
+          <tr><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">BlockPush p2</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">0.71（BET）</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;color:#b3261e;">0.11</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;font-weight:600;">0.94</td></tr>
+          <tr><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">Kitchen p4</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">0.44（BET）</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;font-weight:600;">0.99</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">0.96</td></tr>
+          <tr><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">真机 Push-T（20 次）</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">0–20%</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">—</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;font-weight:600;">95%（IoU 0.80，人 0.84）</td></tr>
+          <tr><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">真机 Mug Flip（20 次）</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">0%</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;">—</td><td style="padding:9px 12px;border-bottom:1px solid #f0f2f5;font-weight:600;">90%</td></tr>
+          <tr><td style="padding:9px 12px;">双臂 EggBeater / Mat / Shirt</td><td style="padding:9px 12px;">未调参</td><td style="padding:9px 12px;">55% / 75% / 75%</td><td style="padding:9px 12px;">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:13px;color:#555;margin-top:10px;">「46.9%」是逐任务相对最佳基线的相对提升再平均（不计 mh），不是绝对成功率涨幅；ToolHang 上 CNN 版反而低于基线，说明骨干与任务匹配比「用不用扩散」更要紧。</div>
+  </section>
+
+  <section style="margin-bottom:8px;">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px;">
+      <span style="font:600 12px/1 ui-monospace,Menlo,monospace;color:#fff;background:#1f6feb;padding:4px 7px;border-radius:4px;">06</span>
+      <h2 style="font-size:18px;margin:0;">边界，以及它和覆盖路径规划的那条桥</h2>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;">
+      <div style="flex:1 1 430px;min-width:300px;background:#fff;border:1px solid #e3e6ea;border-radius:8px;padding:14px 18px;">
+        <div style="font-weight:600;font-size:15px;margin-bottom:8px;">六条边界</div>
+        <ul style="margin:0;padding-left:18px;font-size:13px;color:#333;">
+          <li>继承行为克隆：演示质量决定上限，用不上次优数据与负样本。</li>
+          <li>比 LSTM-GMM 贵；10 Hz 可以，更高频控制不够。</li>
+          <li>骨干不是银弹：ToolHang 上 CNN 版 0.50 低于基线 0.67。</li>
+          <li>任务域窄：桌面操作、固定相机、2–14 维末端动作，没有移动机器人。</li>
+          <li>「多模态」靠随机初始化区分，单次 rollout 只看到一个模态。</li>
+          <li>失败模式只描述未量化：抓空后原地重复（Mat / Shirt 各 75%）。</li>
+        </ul>
+      </div>
+      <div style="flex:1 1 330px;min-width:280px;background:#f3f8ff;border:1px solid #bcd4f7;border-radius:8px;padding:14px 18px;">
+        <div style="font-weight:600;font-size:15px;margin-bottom:8px;color:#1f6feb;">搬到 CPP 上要想的三件事</div>
+        <div style="font-size:13px;color:#333;">① 覆盖顺序天然多模态，回归会「平均成原地打转」，DP 的「选一条并坚持 T_a 步」正对症；<br>② 滚动时域 ≈ 第 13 期 frontier 在线覆盖的「走一段、更新地图、再决策」；<br>③ 位置控制的优势，在差速底盘（速度控制）上是否还成立，是未验证的迁移点。</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+</html>
