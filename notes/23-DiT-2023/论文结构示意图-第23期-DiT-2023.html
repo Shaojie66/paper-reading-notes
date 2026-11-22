@@ -1,0 +1,274 @@
+<title>第23期 DiT 论文结构示意图</title>
+<style>
+  :root{
+    --paper:#f6f4ef;
+    --card:#fffdf8;
+    --ink:#1b1917;
+    --muted:#6f6862;
+    --line:#e0d9cd;
+    --teal:#0f6b62;
+    --teal-soft:#dceeea;
+    --amber:#a8620c;
+    --amber-soft:#f7e9d6;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,"Helvetica Neue","PingFang SC","Noto Sans SC",sans-serif;
+    line-height:1.7;font-size:15px;}
+  .wrap{max-width:920px;margin:0 auto;padding:40px 22px 56px;}
+  .headblock{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:8px;}
+  .kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber);font-weight:700;}
+  h1{font-size:30px;line-height:1.25;margin:8px 0 10px;font-weight:800;letter-spacing:-.01em;}
+  .headblock p{margin:0;color:var(--muted);font-size:14px;}
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0 8px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;}
+  .kpi b{display:block;font-size:26px;line-height:1.2;color:var(--teal);font-weight:800;}
+  .kpi span{font-size:12px;color:var(--muted);}
+  section{margin-top:38px;}
+  .sec-head{display:flex;align-items:baseline;gap:10px;margin-bottom:12px;}
+  .num{font-size:12px;font-weight:800;color:#fff;background:var(--teal);
+    border-radius:4px;padding:2px 7px;letter-spacing:.06em;}
+  h2{font-size:19px;margin:0;font-weight:750;}
+  .lead{color:var(--muted);font-size:13.5px;margin:0 0 14px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;}
+  /* pipeline */
+  .pipe{display:grid;gap:0;}
+  .step{display:grid;grid-template-columns:118px 1fr;gap:14px;align-items:center;
+    padding:11px 16px;background:var(--card);border:1px solid var(--line);
+    border-radius:9px;}
+  .step .tag{font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--muted);
+    text-transform:uppercase;}
+  .step .body{font-size:14.5px;}
+  .step .body b{font-weight:750;}
+  .step .body em{font-style:normal;color:var(--teal);font-weight:650;}
+  .step.hot{border-color:var(--teal);background:var(--teal-soft);}
+  .step.hot .tag{color:var(--teal);}
+  .arrow{text-align:center;color:#b6ad9e;font-size:15px;line-height:1;padding:6px 0;}
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+    border-bottom:1.5px solid #cfc6b8;font-weight:700;}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  tr.win td{background:var(--teal-soft);font-weight:700;}
+  .note{font-size:12.5px;color:var(--muted);margin-top:10px;}
+  /* bars */
+  .bars{display:grid;gap:9px;margin-top:4px;}
+  .bar-row{display:grid;grid-template-columns:150px 1fr 96px;gap:10px;align-items:center;font-size:13px;}
+  .bar-track{height:16px;background:#eee7da;border-radius:3px;position:relative;}
+  .bar-fill{height:16px;border-radius:3px;background:#c2b9a8;}
+  .bar-fill.hi{background:var(--teal);}
+  .bar-row .lab{color:var(--muted);}
+  .bar-row.win .lab{color:var(--ink);font-weight:700;}
+  .bar-row .val{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);}
+  /* svg diagram */
+  .diagram{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 8px;}
+  svg{width:100%;height:auto;display:block;}
+  /* two col */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media (max-width:720px){
+    .two{grid-template-columns:1fr;}
+    .kpis{grid-template-columns:1fr;}
+    .step{grid-template-columns:1fr;gap:4px;}
+    .bar-row{grid-template-columns:112px 1fr 80px;}
+    h1{font-size:24px;}
+  }
+  .limit{display:grid;gap:10px;}
+  .lim{display:grid;grid-template-columns:26px 1fr;gap:10px;font-size:13.5px;
+    padding:10px 12px;background:var(--amber-soft);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;}
+  .lim .i{font-weight:800;color:var(--amber);}
+  footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);
+    font-size:12.5px;color:var(--muted);}
+  .chain{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .chip{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;
+    background:var(--card);color:var(--muted);}
+</style>
+
+<div class="wrap">
+  <div class="headblock">
+    <div class="kicker">第 23 期 · 论文结构示意图</div>
+    <h1>DiT：扩散模型的骨干不必是 U-Net</h1>
+    <p>Scalable Diffusion Models with Transformers — Peebles &amp; Xie, ICCV 2023（示意图，非论文原图）</p>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><b>2.27</b><span>ImageNet 256×256 FID-50K（XL/2 + CFG）</span></div>
+    <div class="kpi"><b>118.6G</b><span>前向算力，约为 ADM（1120G）的 1/9</span></div>
+    <div class="kpi"><b>−0.93</b><span>12 个模型上 Gflops 与 FID 的相关系数</span></div>
+  </div>
+
+  <section>
+    <div class="sec-head"><span class="num">01</span><h2>它要回答的问题</h2></div>
+    <p class="lead">DDPM 以来，U-Net 是扩散模型的默认骨干；ADM 只调了通道数与归一化，没人动过"必须 U-Net"这个前提。</p>
+    <div class="card">
+      <table>
+        <tr><th style="width:32%">被质疑的前提</th><th>本文的检验方式</th></tr>
+        <tr><td>卷积的局部性 / 多尺度下采样是质量必需</td><td>换成纯标准 Transformer，其余（VAE、数据、配方）全部不动</td></tr>
+        <tr><td>参数量可以代表模型复杂度</td><td>改用前向 Gflops；固定参数、只改 token 数就能单独拉算力</td></tr>
+        <tr><td>大模型 + 多采样步 = 更好</td><td>对比"小模型多步"与"大模型少步"的推理算力与 FID</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">02</span><h2>一条潜空间流水线</h2></div>
+    <p class="lead">整个系统 = 冻结的卷积 VAE + Transformer 扩散器。绿色两格是本文真正替换/新增的部分。</p>
+    <div class="pipe">
+      <div class="step"><div class="tag">输入</div><div class="body"><b>图像 x</b>　256 × 256 × 3（ImageNet，类别条件）</div></div>
+      <div class="arrow">▼</div>
+      <div class="step"><div class="tag">压缩</div><div class="body"><b>VAE Encoder（f8，冻结）</b>　下采样 8 倍 → 潜变量 <b>z</b>：32 × 32 × 4</div></div>
+      <div class="arrow">▼</div>
+      <div class="step hot"><div class="tag">关键一</div><div class="body"><b>Patchify</b>　按 <em>p × p</em> 切块线性嵌入：p=2 → <em>256 个 token</em>；p=8 → 16 个。参数量不变，算力变 16 倍</div></div>
+      <div class="arrow">▼</div>
+      <div class="step"><div class="tag">位置</div><div class="body">sine-cosine 位置编码（沿用 ViT）</div></div>
+      <div class="arrow">▼</div>
+      <div class="step hot"><div class="tag">关键二</div><div class="body"><b>N × DiT Block</b>　标准 Transformer + <em>adaLN-Zero</em> 注入时间步 t 与类别 c；S/B/L/XL 四档（0.3–118.6 Gflops）</div></div>
+      <div class="arrow">▼</div>
+      <div class="step"><div class="tag">输出</div><div class="body"><b>Linear Decoder</b>　每 token 解码成 p × p × 2C → 噪声 ε<sub>θ</sub> 与对角协方差 Σ<sub>θ</sub>，再 rearrange 回空间</div></div>
+      <div class="arrow">▼</div>
+      <div class="step"><div class="tag">采样</div><div class="body">从 <b>z<sub>T</sub> ~ N(0, I)</b> 起迭代 250 步（CFG scale 1.5）→ <b>z<sub>0</sub></b> → VAE Decoder → 图像</div></div>
+    </div>
+    <p class="note">训练配方异常朴素：常数学习率 1×10⁻⁴、batch 256、无 weight decay、无 warmup、只做水平翻转、EMA 0.9999，扩散超参整套照搬 ADM。</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">03</span><h2>条件怎么注入，比骨干更重要</h2></div>
+    <p class="lead">同一模型（DiT-XL/2）、同一训练步数（400K），只改注入方式：FID 差了近一倍。</p>
+    <div class="card">
+      <table>
+        <tr><th>Block 类型</th><th>机制</th><th class="n">Gflops</th><th class="n">FID-50K</th></tr>
+        <tr><td>In-context</td><td>t、c 当作 2 个额外 token 拼进序列，末端丢弃</td><td class="n">119.4</td><td class="n">35.24</td></tr>
+        <tr><td>Cross-attention</td><td>t、c 组成独立序列，每层加 cross-attn（LDM 的做法）</td><td class="n">137.6</td><td class="n">25.21</td></tr>
+        <tr><td>adaLN</td><td>由 t+c 回归每层 γ、β，替换 LayerNorm 仿射参数</td><td class="n">118.6</td><td class="n">26.14</td></tr>
+        <tr class="win"><td>adaLN-Zero</td><td>再回归 α 作用于残差出口，且 MLP 零初始化</td><td class="n">118.6</td><td class="n">19.47</td></tr>
+      </table>
+      <p class="note">同样的零初始化思想来自 ResNet 系：让每个 block 初始时是恒等映射，深网络从"什么都不做"开始学。</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">04</span><h2>adaLN-Zero 的一个 block</h2></div>
+    <p class="lead">条件不进序列，而是变成每层的缩放/平移参数——所以几乎不增加算力。</p>
+    <div class="diagram">
+      <svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="adaLN-Zero 结构示意">
+        <defs>
+          <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 z" fill="#8c8274"/>
+          </marker>
+        </defs>
+        <g font-family="-apple-system,Helvetica,PingFang SC,sans-serif">
+          <rect x="20" y="20" width="120" height="40" rx="6" fill="#f7e9d6" stroke="#d8bd94"/>
+          <text x="80" y="44" font-size="13" fill="#a8620c" text-anchor="middle">t 嵌入 + c 嵌入</text>
+          <rect x="20" y="80" width="120" height="46" rx="6" fill="#f7e9d6" stroke="#d8bd94"/>
+          <text x="80" y="100" font-size="12.5" fill="#a8620c" text-anchor="middle">SiLU → Linear</text>
+          <text x="80" y="117" font-size="11.5" fill="#8a7558" text-anchor="middle">输出 6×d</text>
+          <line x1="80" y1="60" x2="80" y2="78" stroke="#8c8274" stroke-width="1.4" marker-end="url(#ah)"/>
+          <text x="150" y="108" font-size="11.5" fill="#6f6862">γ, β → 两次 LayerNorm</text>
+          <text x="150" y="126" font-size="11.5" fill="#6f6862">α → 残差出口缩放</text>
+          <text x="150" y="144" font-size="11.5" fill="#0f6b62">MLP 末层零初始化 ⇒ α = 0</text>
+          <text x="150" y="162" font-size="11.5" fill="#0f6b62">⇒ 整个 block 初始为恒等映射</text>
+
+          <rect x="300" y="120" width="92" height="46" rx="6" fill="#fffdf8" stroke="#cfc6b8"/>
+          <text x="346" y="142" font-size="13" fill="#1b1917" text-anchor="middle">LayerNorm</text>
+          <text x="346" y="158" font-size="11" fill="#6f6862" text-anchor="middle">scale γ, shift β</text>
+          <rect x="414" y="120" width="96" height="46" rx="6" fill="#fffdf8" stroke="#cfc6b8"/>
+          <text x="462" y="148" font-size="13" fill="#1b1917" text-anchor="middle">Multi-Head Attn</text>
+          <rect x="532" y="120" width="96" height="46" rx="6" fill="#fffdf8" stroke="#cfc6b8"/>
+          <text x="580" y="142" font-size="13" fill="#1b1917" text-anchor="middle">LayerNorm</text>
+          <text x="580" y="158" font-size="11" fill="#6f6862" text-anchor="middle">scale γ, shift β</text>
+          <rect x="650" y="120" width="96" height="46" rx="6" fill="#fffdf8" stroke="#cfc6b8"/>
+          <text x="698" y="148" font-size="13" fill="#1b1917" text-anchor="middle">MLP</text>
+          <rect x="768" y="120" width="72" height="46" rx="6" fill="#dceeea" stroke="#0f6b62"/>
+          <text x="804" y="142" font-size="12" fill="#0f6b62" text-anchor="middle">α·(x)</text>
+          <text x="804" y="158" font-size="11" fill="#0f6b62" text-anchor="middle">残差相加</text>
+
+          <line x1="240" y1="143" x2="298" y2="143" stroke="#8c8274" stroke-width="1.4" marker-end="url(#ah)"/>
+          <line x1="392" y1="143" x2="412" y2="143" stroke="#8c8274" stroke-width="1.4" marker-end="url(#ah)"/>
+          <line x1="510" y1="143" x2="530" y2="143" stroke="#8c8274" stroke-width="1.4" marker-end="url(#ah)"/>
+          <line x1="628" y1="143" x2="648" y2="143" stroke="#8c8274" stroke-width="1.4" marker-end="url(#ah)"/>
+          <line x1="746" y1="143" x2="766" y2="143" stroke="#8c8274" stroke-width="1.4" marker-end="url(#ah)"/>
+
+          <text x="240" y="118" font-size="11.5" fill="#6f6862" text-anchor="end">token 序列</text>
+          <text x="20" y="205" font-size="11.5" fill="#6f6862">残差：输入 x 与 α·f(x) 相加后进入下一 block；</text>
+          <text x="20" y="224" font-size="11.5" fill="#6f6862">α = 0 时该 block 不改变输入，梯度仍可穿过（深网络稳定训练的关键）。</text>
+          <text x="20" y="252" font-size="11.5" fill="#a8620c">对比 cross-attn：后者要额外一层注意力，算力 +15%（137.6 vs 118.6 Gflops），且 FID 更差。</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">05</span><h2>两个方向的缩放，同一结论</h2></div>
+    <p class="lead">十二条曲线、两种旋钮：加深加宽，或减小 patch（token 变多）。两条路都随 Gflops 单调变好。</p>
+    <div class="two">
+      <div class="diagram">
+        <svg viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="减小 patch 的缩放曲线">
+          <g font-family="-apple-system,Helvetica,PingFang SC,sans-serif">
+            <text x="12" y="18" font-size="12" fill="#6f6862">减小 patch（参数量固定 675M）</text>
+            <line x1="46" y1="210" x2="386" y2="210" stroke="#cfc6b8"/>
+            <line x1="46" y1="36" x2="46" y2="210" stroke="#cfc6b8"/>
+            <text x="44" y="226" font-size="10.5" fill="#8c8274" text-anchor="start">7.4 G</text>
+            <text x="386" y="226" font-size="10.5" fill="#8c8274" text-anchor="end">118.6 G</text>
+            <text x="20" y="40" font-size="10.5" fill="#8c8274">FID 110</text>
+            <text x="20" y="205" font-size="10.5" fill="#8c8274">10</text>
+            <polyline points="46,48 236,124 386,190" fill="none" stroke="#0f6b62" stroke-width="1.6" stroke-dasharray="4 4"/>
+            <circle cx="46" cy="48" r="6" fill="#0f6b62"/>
+            <circle cx="236" cy="124" r="6" fill="#0f6b62"/>
+            <circle cx="386" cy="190" r="6" fill="#0f6b62"/>
+            <text x="58" y="44" font-size="11" fill="#1b1917">XL/8 · 106.4</text>
+            <text x="196" y="120" font-size="11" fill="#1b1917">XL/4 · 43.0</text>
+            <text x="300" y="184" font-size="11" fill="#1b1917">XL/2 · 19.5</text>
+            <text x="46" y="244" font-size="10.5" fill="#8c8274">横轴：前向 Gflops（对数感觉） ｜ 纵轴：FID-50K，400K 步</text>
+          </g>
+        </svg>
+      </div>
+      <div class="card">
+        <table>
+          <tr><th>加深加宽（p=2）</th><th class="n">Gflops</th><th class="n">FID</th></tr>
+          <tr><td>DiT-S/2</td><td class="n">6.06</td><td class="n">68.40</td></tr>
+          <tr><td>DiT-L/2</td><td class="n">80.7</td><td class="n">23.33</td></tr>
+          <tr class="win"><td>DiT-XL/2</td><td class="n">118.6</td><td class="n">19.47</td></tr>
+        </table>
+        <p class="note">同一张表里还有个反直觉的对照：XL/2 与 XL/4 参数量几乎相同（675M vs 676M），FID 19.47 vs 43.01。所以决定质量的是算力，不是参数。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">06</span><h2>SOTA 与算力账</h2></div>
+    <p class="lead">256×256 的前向算力对照（对数轴感；括号内为 FID-50K）。</p>
+    <div class="card">
+      <div class="bars">
+        <div class="bar-row"><div class="lab">ADM-G（U-Net, 像素）</div><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><div class="val">1120 G｜3.94</div></div>
+        <div class="bar-row"><div class="lab">ADM-U（U-Net, 像素）</div><div class="bar-track"><div class="bar-fill" style="width:66%"></div></div><div class="val">742 G｜3.94</div></div>
+        <div class="bar-row"><div class="lab">LDM-4-G（潜空间 U-Net）</div><div class="bar-track"><div class="bar-fill" style="width:9.3%"></div></div><div class="val">103.6 G｜3.60</div></div>
+        <div class="bar-row win"><div class="lab">DiT-XL/2-G（本文）</div><div class="bar-track"><div class="bar-fill hi" style="width:10.6%"></div></div><div class="val">118.6 G｜2.27</div></div>
+      </div>
+      <p class="note">512×512 同理：DiT-XL/2 用 524.6 G 拿到 3.04，ADM-G / ADM-U 分别用 1983 / 2813 G 拿到 3.85。</p>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <p style="margin:0;font-size:13.5px;"><b>采样算力不能替代模型算力：</b>DiT-L/2 跑 1000 步（80.7 Tflops/图）FID-10K 25.9；DiT-XL/2 只跑 128 步（15.2 Tflops/图）却拿到 23.7。大模型用 1/5 的推理算力仍然更好。</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="num">07</span><h2>三个容易读错的点</h2></div>
+    <div class="limit">
+      <div class="lim"><div class="i">1</div><div><b>"省 9 倍算力"只指单次前向。</b>DiT-XL/2 要训 7M 步才到 2.27；ADM 训 2.35M 步就有 2.55。总训练成本反而更高。引用时务必标明口径。</div></div>
+      <div class="lim"><div class="i">2</div><div><b>只有类别条件，文本条件未验证。</b>论文没有做 text-to-image，cross-attn 那条为文本准备的路只是"设计空间里的一个选项"。SD3 后来改用双流 MMDiT，正说明单流 adaLN 对细粒度文本不够。</div></div>
+      <div class="lim"><div class="i">3</div><div><b>FID 单一指标掩盖了取舍。</b>DiT 的 recall 更高（0.62 vs LDM-4-G 0.48），但 precision 略低（0.83 vs 0.87）；且 VAE 冻结，重建质量是天花板，decoder 消融只有 2.46 / 2.30 / 2.27 的微小差别。</div></div>
+    </div>
+  </section>
+
+  <footer>
+    <div>数据来源：ICCV 2023 原文（arXiv:2212.09748v2），表 1–4 与图 2、5、8–10。</div>
+    <div class="chain">
+      <span class="chip">第 17 期 DDPM</span>
+      <span class="chip">第 18 期 DDIM</span>
+      <span class="chip">第 19 期 ADM</span>
+      <span class="chip">第 20 期 CFG</span>
+      <span class="chip">第 21 期 LDM</span>
+      <span class="chip">第 23 期 DiT</span>
+    </div>
+  </footer>
+</div>
