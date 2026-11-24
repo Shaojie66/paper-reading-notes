@@ -1,0 +1,157 @@
+<title>第24期 UAV 充电覆盖 论文结构示意图</title>
+<div class="wrap">
+<style>
+  .wrap{background:#fbf7f0;color:#1b1917;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Segoe UI",sans-serif;padding:28px 22px 34px;box-sizing:border-box;line-height:1.62;font-size:14.5px;max-width:1000px;margin:0 auto;}
+  .kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#8c8274;margin:0 0 6px;}
+  h1{font-size:23px;line-height:1.35;margin:0 0 4px;font-weight:700;}
+  .sub{color:#6f6862;font-size:13.5px;margin:0 0 18px;}
+  .sub b{color:#1b1917;font-weight:600;}
+  .kpis{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 20px;}
+  .kpi{flex:1 1 200px;background:#fffdf8;border:1px solid #cfc6b8;border-radius:10px;padding:12px 14px;}
+  .kpi .v{font-size:26px;font-weight:700;line-height:1.15;color:#0f6b62;}
+  .kpi .l{font-size:11.5px;color:#6f6862;margin-top:4px;letter-spacing:.02em;}
+  .kpi .n{font-size:12px;color:#2b2825;margin-top:6px;}
+  .card{background:#fffdf8;border:1px solid #cfc6b8;border-radius:10px;padding:16px 18px;margin:0 0 14px;}
+  .hd{display:flex;align-items:baseline;gap:10px;margin:0 0 10px;}
+  .num{font-size:12px;font-weight:700;color:#a8620c;letter-spacing:.08em;}
+  .ttl{font-size:16.5px;font-weight:700;}
+  .ttl small{font-weight:400;color:#8c8274;font-size:12px;margin-left:6px;}
+  p{margin:0 0 9px;} p:last-child{margin-bottom:0;}
+  .muted{color:#6f6862;}
+  .three{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;}
+  .box{flex:1 1 220px;background:#fdf6ea;border:1px solid #e4d3b6;border-radius:8px;padding:10px 12px;}
+  .box .t{font-size:12.5px;font-weight:700;color:#a8620c;margin-bottom:4px;}
+  .box .d{font-size:12.8px;color:#3a3531;}
+  table{width:100%;border-collapse:collapse;font-size:12.8px;margin:6px 0 4px;}
+  th,td{border:1px solid #ddd5c8;padding:6px 8px;text-align:left;vertical-align:top;}
+  th{background:#f3ece1;font-weight:700;font-size:12.3px;}
+  td.c{text-align:center;}
+  .pos{color:#3f7d4f;font-weight:700;}
+  .neg{color:#a23b2a;font-weight:700;}
+  .flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 2px;font-size:12.5px;}
+  .step{background:#f1f7f5;border:1px solid #b6d3cb;border-radius:7px;padding:6px 9px;color:#0f5c54;}
+  .arr{color:#8c8274;}
+  .step.warn{background:#fbf0e2;border-color:#e5c9a5;color:#a8620c;}
+  .bars{margin:6px 0 2px;}
+  .row{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:12.3px;}
+  .rl{width:96px;color:#6f6862;flex:0 0 96px;}
+  .track{flex:1 1 auto;background:#f1ece2;border-radius:4px;height:16px;position:relative;}
+  .fill{height:16px;border-radius:4px;}
+  .f1{background:#0f6b62;} .f2{background:#a8620c;}
+  .rv{width:46px;text-align:right;font-variant-numeric:tabular-nums;color:#1b1917;flex:0 0 46px;}
+  .legend{font-size:11.5px;color:#8c8274;margin-top:4px;}
+  .chips{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .chip{background:#f3ece1;border:1px solid #cfc6b8;border-radius:999px;padding:4px 10px;font-size:11.8px;color:#5b544c;}
+  .chip b{color:#0f6b62;}
+  .foot{margin-top:14px;font-size:11.5px;color:#8c8274;}
+</style>
+
+<p class="kicker">Paper Reading · Issue 24 · Diagram</p>
+<h1>Learning to Recharge：把「电量」写进覆盖路径规划</h1>
+<p class="sub">Theile, Bayerlein, Caccamo, Sangiovanni-Vincentelli｜arXiv:2309.03157v2（2023）｜<b>结论：约束处理（三层动作掩码）比换网络更决定成败</b></p>
+
+<div class="kpis">
+  <div class="kpi"><div class="v">−28.7%</div><div class="l">STEPS vs 贪心启发式（Suburban 专用智能体）</div><div class="n">专用智能体在各自地图上少走 24%–31%</div></div>
+  <div class="kpi"><div class="v">0</div><div class="l">训练全程安全违规（不变量掩码）</div><div class="n">同一算力下无掩码完全学不出任务</div></div>
+  <div class="kpi"><div class="v">9.3% → 27.5%</div><div class="l">未见地图 Border 的解出率</div><div class="n">加位置历史层后约翻三倍，但仍是最短板</div></div>
+</div>
+
+<div class="card">
+  <div class="hd"><span class="num">01</span><span class="ttl">问题：一趟飞不完的覆盖任务<small>为什么充电让问题变难</small></span></div>
+  <div class="three">
+    <div class="box"><div class="t">① 充电行程要进策略</div><div class="d">哪一趟扫哪块、从哪个降落区起降，必须提前算清；否则剩小片目标，白跑一趟。</div></div>
+    <div class="box"><div class="t">② 目标 ≠ 自由空间</div><div class="d">只覆盖部分 patch，且目标格可能落在禁飞区里，只能贴边用视场扫。</div></div>
+    <div class="box"><div class="t">③ 观测部分可观</div><div class="d">低矮建筑可飞越却遮挡视场，高层建筑等同禁飞，地图与实际可覆盖区不一致。</div></div>
+  </div>
+  <p class="muted" style="margin-top:10px">经典 CPP 是「细胞分解 + 往返扫描 + 排访问顺序」；本文的问题多了硬能量约束，于是变成跨整个任务时段的长程决策。</p>
+</div>
+
+<div class="card">
+  <div class="hd"><span class="num">02</span><span class="ttl">建模：栅格世界，电池就是「还能走几步」</span></div>
+  <div class="flow">
+    <span class="step">落地满电</span><span class="arr">→</span>
+    <span class="step">起飞</span><span class="arr">→</span>
+    <span class="step">覆盖 + 视场移除目标</span><span class="arr">→</span>
+    <span class="step warn">电量临界</span><span class="arr">→</span>
+    <span class="step">返航降落</span><span class="arr">→</span>
+    <span class="step warn">充电 +2</span><span class="arr">→</span>
+    <span class="step">下一趟</span>
+  </div>
+  <p style="margin-top:10px">7 个原子动作 <b>东/北/西/南/起飞/降落/充电</b>；<b>b<sub>max</sub>=100</b>、充电一次 <b>+2</b>、初始电量在 [0.5, 1] b<sub>max</sub> 随机。目标是在 <b>C<sub>T</sub>=∅ 且已降落</b> 的前提下最小化总步数 T —— 时段长度由策略自己决定，所以是长时段问题。</p>
+</div>
+
+<div class="card">
+  <div class="hd"><span class="num">03</span><span class="ttl">三层动作掩码<small>把安全写进动作空间，而不是奖励里</small></span></div>
+  <table>
+    <tr><th style="width:96px">层级</th><th>判据</th><th style="width:260px">消融结果（Multi3，1.2e8 步）</th></tr>
+    <tr><td><b>valid</b></td><td>只满足动作前置条件（落地才能充、飞行才能动）</td><td>崩溃率 10–20%，覆盖率长期很低，<b>从未完成任务</b></td></tr>
+    <tr><td><b>immediate</b></td><td>再排除一步后进入禁飞区的动作</td><td>成功率 90–95%，剩余场景以撞毁告终</td></tr>
+    <tr><td><b>invariant</b></td><td>再要求 <b>d<sub>L</sub>(p′) ≤ b<sub>t</sub> − 1</b>（走完这步仍能回到降落区）</td><td>最快学会、成功率≈100%、<b>零违规</b></td></tr>
+    <tr><td><b>无掩码</b></td><td>—</td><td>卡在两个局部最优：永不起了 / 飞出去不返航</td></tr>
+  </table>
+  <p class="muted" style="margin-top:8px">d<sub>L</sub> 来自一张到最近降落区的距离图：降落区=1、禁飞区=∞、其余=1+四邻居最小值（递归扩散）。掩码实现只需把不可行动作 logits 置 −∞ 再 softmax。</p>
+</div>
+
+<div class="card">
+  <div class="hd"><span class="num">04</span><span class="ttl">长时段三件套<small>掩码之外，还要解决「学不完」和「绕圈」</small></span></div>
+  <div class="three">
+    <div class="box">
+      <div class="t">折扣因子调度</div>
+      <div class="d">γ 从 0.99 爬到 0.999（2e7 步内完成）。<br>γ=1 值估计会炸；γ 小又变贪心。<br>调度 = 先学会做完，再学会做快。</div>
+      <svg width="100%" viewBox="0 0 240 78" role="img" aria-label="折扣因子随时间上升示意">
+        <rect x="0" y="0" width="240" height="78" fill="#fffdf8"/>
+        <line x1="18" y1="62" x2="228" y2="62" stroke="#cfc6b8"/>
+        <line x1="18" y1="8" x2="18" y2="62" stroke="#cfc6b8"/>
+        <polyline points="18,56 60,50 110,30 160,16 228,12" fill="none" stroke="#0f6b62" stroke-width="2"/>
+        <circle cx="18" cy="56" r="3.5" fill="#0f6b62"/>
+        <text x="24" y="72" font-size="9" fill="#8c8274">0.99</text>
+        <text x="196" y="72" font-size="9" fill="#8c8274">0.999</text>
+        <text x="150" y="10" font-size="9" fill="#0f6b62">γ↑</text>
+      </svg>
+    </div>
+    <div class="box">
+      <div class="t">位置历史层</div>
+      <div class="d">充电让「同一状态」可复现 → 确定性策略死循环。<br>观测加一层衰减脚印：当前=1，其余每步 ×0.99。<br><b>不改奖励，只改观测</b>：Border 9.3%→27.5%，分布内 95.5%→98.9%。</div>
+    </div>
+    <div class="box">
+      <div class="t">全局-局部双视野</div>
+      <div class="d">以智能体为中心补边到 2m−1：全局按 g=3 下采样（长程），局部裁 17×17（避障+视场）。<br>5 通道 + 2 标量；CNN 两支各出 512 维，actor/critic 各约 5M 参数。</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="hd"><span class="num">05</span><span class="ttl">结果：比贪心少走四分之一<small>Table IV，RPD 负值=更优</small></span></div>
+  <table>
+    <tr><th>地图</th><th class="c">专用智能体</th><th class="c">Multi3</th><th class="c">Multi10</th><th>说明</th></tr>
+    <tr><td>Suburban</td><td class="c pos">−28.7%</td><td class="c pos">−15.4%</td><td class="c pos">−8.9%</td><td>需绕过宽禁飞区两侧</td></tr>
+    <tr><td>Castle</td><td class="c pos">−23.7%</td><td class="c pos">−18.3%</td><td class="c pos">−10.7%</td><td>长距离往返取点</td></tr>
+    <tr><td>TUM</td><td class="c pos">−26.5%</td><td class="c pos">−19.2%</td><td class="c pos">−7.1%</td><td>要区分低矮/高层障碍</td></tr>
+    <tr><td>Cal（未见）</td><td class="c pos">−30.7%</td><td class="c neg">+10.2%</td><td class="c pos">−1.6%</td><td>多图智能体略优于贪心</td></tr>
+    <tr><td>Border（未见）</td><td class="c pos">−28.6%</td><td class="c neg">+37.9%</td><td class="c neg">+21.5%</td><td>解出率仅 27.5% / 35%</td></tr>
+  </table>
+  <div class="bars">
+    <div class="row"><div class="rl">智能体</div><div class="track"><div class="fill f1" style="width:34%"></div></div><div class="rv">166</div></div>
+    <div class="row"><div class="rl">贪心启发式</div><div class="track"><div class="fill f2" style="width:55%"></div></div><div class="rv">266</div></div>
+    <div class="row"><div class="rl">智能体</div><div class="track"><div class="fill f1" style="width:46%"></div></div><div class="rv">225</div></div>
+    <div class="row"><div class="rl">贪心启发式</div><div class="track"><div class="fill f2" style="width:79%"></div></div><div class="rv">382</div></div>
+    <div class="legend">Manhattan 地图两个场景的步数（b<sub>max</sub>=75，几乎不可能一趟扫完）：差距来自「多架次目标分解」是学出来的，贪心总会剩小片。</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="hd"><span class="num">06</span><span class="ttl">三个容易读错的地方</span></div>
+  <p><b>① −28% 是相对自建贪心，不是相对最优。</b>没有和经典 boustrophedon + TSP、也没和其他 DRL 方法比。</p>
+  <p><b>②「充电」是抽象。</b>电量=剩余步数，充电瞬间 +2，没有真实能耗（爬升/悬停/风）与充电耗时。</p>
+  <p><b>③ 三件套强耦合。</b>作者自己指出：没有不变量掩码时，折扣调度反而有害——撞毁比多飞几步便宜，γ 一升「撞了更划算」。</p>
+</div>
+
+<div class="chips">
+  <span class="chip">→ 承上 <b>第 9 期</b> CPP 综述</span>
+  <span class="chip">→ 对照 <b>第 13 期</b> CPP×RL（被本文引用）</span>
+  <span class="chip">→ 本期 <b>第 24 期</b></span>
+  <span class="chip">下一篇 <b>第 25 期</b> 待定</span>
+</div>
+
+<p class="foot">第 24 期 · Learning to Recharge（arXiv:2309.03157v2）· 全图数据取自论文 Table III / Table IV / Fig.5–7 · 生成于 2026-11-24</p>
+</div>
