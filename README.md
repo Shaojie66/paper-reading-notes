@@ -2,9 +2,9 @@
 **中文** | [English](README.en.md)
 > AI 学习视角的结构化论文精读归档：每两天一篇，由豆包定时任务自动检索、精读并推送。
 > 每期产出：结构化阅读笔记（Markdown）+ 论文结构示意图（HTML）。
-![更新频率](https://img.shields.io/badge/%E6%9B%B4%E6%96%B0-%E6%AF%94%E5%AF%B6%E6%AF%94%E5%A4%A9%E6%B5%81%E6%9C%9F-orange)
+![更新频率](https://img.shields.io/badge/%E6%9B%B4%E6%96%B0-%E6%AF%8F%E4%B8%A4%E5%A4%A9%E4%B8%80%E6%9C%9F-orange)
 ![论文数量](https://img.shields.io/badge/%E8%AE%BA%E6%96%87-25%E7%AF%87-blue)
-![选题策略](https://img.shields.io/badge/%E9%80%89%E9%A2%98-%E5%85%8D%E5%AE%9D%E5%AE%9D%E6%9C%9F-brightgreen)
+![选题策略](https://img.shields.io/badge/%E9%80%89%E9%A2%98-%E5%85%88%E7%BB%BC%E6%8F_B0%E7%BB%85%E5%85%B8-brightgreen)
 ![开源协议](https://img.shields.io/badge/License-MIT-green)
 ## 仓库内容
 | 期数 | 论文 | 主题 | 难度 | 状态 |
