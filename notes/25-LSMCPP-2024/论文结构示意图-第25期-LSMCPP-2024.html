@@ -1,0 +1,162 @@
+<title>第25期 LS-MCPP 多机器人覆盖 论文结构示意图</title>
+<div class="wrap">
+  <div class="headblock">
+    <div class="eyebrow">论文阅读笔记 · 第 25 期 · AAAI 2024</div>
+    <div class="h1">Large-Scale Multi-Robot Coverage Path Planning via Local Search</div>
+    <div class="sub">Tang &amp; Ma（Simon Fraser University）｜把 MCPP 从「先求树覆盖」搬到「直接在分解图上局部搜索」</div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="kv">−67.0%</div><div class="kl">马氏时间相对 VOR 最多下降</div></div>
+    <div class="kpi"><div class="kv">≤ 20 min</div><div class="kl">全部实例出解；MIP 常撞 24 h 时限</div></div>
+    <div class="kpi"><div class="kv">−1.02%</div><div class="kl">与最优树覆盖（MIP）的平均差距</div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><span class="num">01</span><span class="ttl">问题：两层抽象 + 两个硬伤</span></div>
+    <div class="flow">
+      <div class="step"><b>地形图 G</b><span>每格一顶点，四邻接，边带权（可非均匀）</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>分解图 D</b><span>每格拆成 4 个顶点（视场四象限都要走到）</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>STC</b><span>MST + 贴右侧绕行：每格一次、少回头</span></div>
+    </div>
+    <div class="note">多机器人版 = 在 G 上求 <b>k 棵树组成的树覆盖</b>（根在各机器人起点）→ 归约为 NP 难的 Min-Max Rooted Tree Cover，目标是压最小的马氏时间（makespan = 最长那条路径的成本）。</div>
+    <div class="two">
+      <div class="box bad"><div class="bt">硬伤一：G 必须「完整」</div><div class="bb">真实地图里 2×2 块常被部分遮挡（墙角、窄通道）。缺 1–3 个分解顶点，「绕右侧」就走不通，STC 失去覆盖保证。</div></div>
+      <div class="box bad"><div class="bt">硬伤二：最优树 ≠ 最优 MCPP</div><div class="bb">覆盖路径只在 D 的解法空间的受限子集里搜索，最坏渐近比可达 <b>4 倍</b>（Zheng 2010）。把树调得最平衡，也未必是好的多机覆盖。</div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><span class="num">02</span><span class="ttl">关键转身：跳过树覆盖，直接在 D 上搜</span></div>
+    <div class="note">先给 k 个<b>连通子图</b> D<sub>i</sub>（并集覆盖 D 的全部顶点），每个 D<sub>i</sub> 单独跑 ESTC 生成 π<sub>i</sub>；之后搜索不再动「树」，只动<b>子图边界</b>。两条不变量全程保持：① D<sub>i</sub> 连通 ② 并集覆盖 V<sub>d</sub>。</div>
+    <div class="flow">
+      <div class="step"><b>初始解</b><span>MFC 给出树覆盖 → 转成分解图子图</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>算子改边界</b><span>grow / dedup / exchange，逐边操作</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>ESTC 重生成</b><span>只对相关子图重算 Δτ，代价很低</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>退火接受</b><span>变好接受；变差按 exp(−Δτ/t) 接受</span></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><span class="num">03</span><span class="ttl">ESTC：让 STC 在不完整地形上也有覆盖保证</span></div>
+    <div class="three">
+      <div class="card"><div class="ct">① 建增广地形图 G′</div><div class="cb">两端分解顶点互不相邻的地形边 → 删掉；只剩对角分解顶点的格子 → 在地形图上拆成两个互不相邻的顶点。连通的 D 保证 G′ 连通。</div></div>
+      <div class="card"><div class="ct">② 抬价逼出「叶子」</div><div class="cb">涉及不完整顶点的边权设为 w<sub>max</sub>×原权，MST 自然把这些难处理的顶点放到叶子位置，减少路径变形带来的重复覆盖。</div></div>
+      <div class="card"><div class="ct">③ 路径变形 + 定理 1</div><div class="cb">右侧走不通就绕左侧。定理 1：只要每个 D<sub>i</sub> 连通且并集覆盖 V<sub>d</sub>，ESTC 保证完整覆盖。</div></div>
+    </div>
+    <div class="quote">「不改特判规则，改目标函数的结构，让优化器替你实现启发式。」</div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><span class="num">04</span><span class="ttl">三类边界编辑算子</span></div>
+    <table>
+      <tr><th>算子</th><th>作用</th><th>关键条件</th><th>设计理由</th></tr>
+      <tr><td class="op">grow</td><td>轻子图长出一格（该格已被他人覆盖）</td><td>子图内须存在一条「平行边」</td><td>避免造出 u→v→u 的 U 形绕行</td></tr>
+      <tr><td class="op">dedup</td><td>重子图删掉一格，消除多余重复</td><td>完整顶点过三条条件；不完整顶点不设限</td><td>删完不能反过来造出新的重复</td></tr>
+      <tr><td class="op">exchange</td><td>把一条边从子图 j 挪给 i</td><td>= grow 有效 + dedup 有效</td><td>直接平衡两条路径成本，重复集不变</td></tr>
+    </table>
+    <div class="note">所有算子只动<b>同一地形格内部</b>的边（F<sub>i</sub>），且逐边而非逐顶点——跨格改边必引入无谓绕行，逐顶点易造折返。</div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><span class="num">05</span><span class="ttl">调度：双 softmax + 退火 + 强制去重</span></div>
+    <div class="chain">
+      <div class="chip">轮盘选池<br><span>softmax(p)，p 按 −Δτ 衰减</span></div>
+      <div class="gap">›</div>
+      <div class="chip">池内采样<br><span>softmax(h)，启发值偏向轻子图</span></div>
+      <div class="gap">›</div>
+      <div class="chip">局部评估<br><span>仅相关子图重跑 ESTC</span></div>
+      <div class="gap">›</div>
+      <div class="chip">退火接受<br><span>t：1 → 0.2；γ = 0.01</span></div>
+      <div class="gap">›</div>
+      <div class="chip">强制去重<br><span>每 S 步：先删 U-turn，再套 dedup</span></div>
+    </div>
+    <div class="note">迭代上限：小实例 M = 3e3，大实例 M = 1.5e4。启发式采样在 flr-1 上明显优于均匀随机，在较简单的 trn1-1 上差距很小。</div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><span class="num">06</span><span class="ttl">效果：马氏时间降幅与运行时间</span></div>
+    <div class="bars">
+      <div class="barrow"><div class="blab">vs VOR（最多）</div><div class="bar"><div class="bar-fill" style="width:67%"></div></div><div class="bval">67.0%</div></div>
+      <div class="barrow"><div class="blab">vs MFC（最多）</div><div class="bar"><div class="bar-fill" style="width:36%"></div></div><div class="bval">35.7%</div></div>
+      <div class="barrow"><div class="blab">vs MSTC*（最多）</div><div class="bar"><div class="bar-fill" style="width:30%"></div></div><div class="bval">30.3%</div></div>
+      <div class="barrow"><div class="blab">三者平均</div><div class="bar"><div class="bar-fill mid" style="width:50%"></div></div><div class="bval">50.4 / 26.7 / 13.4%</div></div>
+    </div>
+    <div class="two">
+      <div class="box good"><div class="bt">与 MIP（最优树覆盖）比</div><div class="bb">前 6 个较小实例上平均差距 −1.02% / +1.16%，即打平甚至更好；但 MIP 常撞 24 h 时限，本文全部实例 20 分钟内出解，大实例约 15 分钟。</div></div>
+      <div class="box good"><div class="bt">不完整地形</div><div class="bb">随机去掉 20% 顶点的部分分解顶点：所有基线失效，只有本文（RTC 造初始子树 + ESTC）还能出解，质量比完整地形差但可用。</div></div>
+    </div>
+    <div class="note">消融：去 grow → 搜索提前停滞；去 dedup → 不稳定且明显变差；去 exchange → 收敛慢、解差；ESTC 在 12.5/25/37.5/50% 不完整顶点下均优于 Full-STC。规模：128×128、32 机器人；实例最大 11,892 顶点。</div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><span class="num">07</span><span class="ttl">局限与定位</span></div>
+    <div class="two">
+      <div class="box"><div class="bt">方法与边界</div><div class="bb">离线静态已知地图；无机器人间时空冲突处理（MAPF 留作 future work）；无能量/充电约束；局部搜索无最优性保证，对初始解敏感；允许必要重复，非「每格恰好一次」。</div></div>
+      <div class="box"><div class="bt">读数提醒</div><div class="bb">大规模实例的基线是「24 小时超时」，非同预算对比；消融只在 2 个实例；4-邻接栅格抽象，无运动学与转弯代价（扩展版 2411.01707 才补）。</div></div>
+    </div>
+    <div class="chips">
+      <span class="chip2">第 9 期 · CPP 综述</span>
+      <span class="chip2">第 13 期 · CPP × RL</span>
+      <span class="chip2">第 24 期 · 能量约束与充电</span>
+      <span class="chip2 now">第 25 期 · 多机器人 + 强基线</span>
+      <span class="chip2">第 26 期 · 待更新</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .wrap{max-width:1000px;margin:0 auto;padding:34px 26px 46px;background:#f6f4ef;color:#16181c;font-family:"PingFang SC","Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.7}
+  .headblock{border-left:6px solid #14625c;padding:4px 0 4px 18px;margin-bottom:24px}
+  .eyebrow{font-size:12px;letter-spacing:.12em;color:#14625c;font-weight:700;margin-bottom:6px}
+  .h1{font-size:26px;font-weight:800;line-height:1.35;margin-bottom:8px}
+  .sub{font-size:14px;color:#5b6068}
+  .kpis{display:flex;gap:14px;margin-bottom:26px}
+  .kpi{flex:1;background:#fff;border:1px solid #e2ded4;border-top:4px solid #c8792c;border-radius:6px;padding:14px 16px}
+  .kv{font-size:24px;font-weight:800;color:#14625c;line-height:1.3}
+  .kl{font-size:12.5px;color:#5b6068;margin-top:4px}
+  .sec{background:#fff;border:1px solid #e2ded4;border-radius:8px;padding:18px 20px 16px;margin-bottom:18px}
+  .sec-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px dashed #ddd8cc}
+  .num{font-size:12px;font-weight:800;color:#fff;background:#14625c;border-radius:3px;padding:2px 7px;letter-spacing:.06em}
+  .ttl{font-size:17px;font-weight:700}
+  .flow{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}
+  .step{flex:1;min-width:170px;background:#f3f1ea;border-radius:6px;padding:10px 12px}
+  .step b{display:block;font-size:13.5px;color:#14625c;margin-bottom:3px}
+  .step span{font-size:12.5px;color:#4a4f57}
+  .arrow{align-self:center;color:#c8792c;font-weight:800}
+  .note{margin-top:12px;font-size:13.5px;color:#3d434b;background:#fbf9f4;border-left:3px solid #c8792c;padding:9px 12px;border-radius:0 4px 4px 0}
+  .two{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+  .three{display:flex;gap:12px;flex-wrap:wrap}
+  .box{flex:1;min-width:250px;border:1px solid #e5e1d7;border-radius:6px;padding:11px 13px;background:#fcfbf8}
+  .bad{border-left:4px solid #b8442f}
+  .good{border-left:4px solid #14625c}
+  .bt{font-weight:700;font-size:13.5px;margin-bottom:4px}
+  .bb{font-size:12.8px;color:#4a4f57}
+  .card{flex:1;min-width:200px;background:#f3f1ea;border-radius:6px;padding:12px 14px}
+  .ct{font-weight:700;font-size:13.5px;color:#14625c;margin-bottom:4px}
+  .cb{font-size:12.8px;color:#4a4f57}
+  .quote{margin-top:12px;text-align:center;font-size:14px;color:#14625c;font-weight:600;letter-spacing:.02em}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;background:#14625c;color:#fff;font-weight:600;padding:8px 10px}
+  td{padding:8px 10px;border-bottom:1px solid #eae6dc;vertical-align:top;color:#3d434b}
+  .op{font-weight:700;color:#c8792c;font-family:"SF Mono",Menlo,monospace}
+  .chain{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .chip{flex:1;min-width:140px;background:#f3f1ea;border-radius:6px;padding:9px 11px;font-size:13px;font-weight:700;color:#14625c;text-align:center}
+  .chip span{display:block;font-weight:400;font-size:11.8px;color:#5b6068;margin-top:3px}
+  .gap{color:#c8792c;font-weight:800}
+  .bars{margin-bottom:6px}
+  .barrow{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .blab{width:150px;font-size:12.8px;color:#4a4f57;flex:none}
+  .bar{flex:1;background:#eceae2;border-radius:3px;height:16px;overflow:hidden}
+  .bar-fill{height:16px;background:#14625c;border-radius:3px}
+  .bar-fill.mid{background:#c8792c}
+  .bval{width:130px;font-size:12.5px;font-weight:700;color:#14625c;flex:none}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px dashed #ddd8cc}
+  .chip2{font-size:12px;background:#f3f1ea;border:1px solid #e2ded4;border-radius:14px;padding:4px 11px;color:#5b6068}
+  .chip2.now{background:#14625c;border-color:#14625c;color:#fff;font-weight:700}
+</style>
