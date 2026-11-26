@@ -2,9 +2,9 @@
 **中文** | [English](README.en.md)
 > AI 学习视角的结构化论文精读归档：每两天一篇，由豆包定时任务自动检索、精读并推送。
 > 每期产出：结构化阅读笔记（Markdown）+ 论文结构示意图（HTML）。
-![更新频率](https://img.shields.io/badge/%E6%9B%B4%E6%96%B0-%E6%AF%8F%E4%B8%A4%E5%A4%A9%E4%B8%80%E6%9C%9F-orange)
-![论文数量](https://img.shields.io/badge/%E8%AE%BA%E6%96%87-24%E7%AF%87-blue)
-![选题策略](https://img.shields.io/badge/%E9%80%89%E9%A2%98-%E5%85%88%E7%BB%BC%E8%BF%B0%E5%90%8E%E7%BB%8F%E5%85%B8-brightgreen)
+![更新频率](https://img.shields.io/badge/%E6%9B%B4%E6%96%B0-%E6%AF%94%E5%AF%B6%E6%AF%94%E5%A4%A9%E6%B5%81%E6%9C%9F-orange)
+![论文数量](https://img.shields.io/badge/%E8%AE%BA%E6%96%87-25%E7%AF%87-blue)
+![选题策略](https://img.shields.io/badge/%E9%80%89%E9%A2%98-%E5%85%8D%E5%AE%9D%E5%AE%9D%E6%9C%9F-brightgreen)
 ![开源协议](https://img.shields.io/badge/License-MIT-green)
 ## 仓库内容
 | 期数 | 论文 | 主题 | 难度 | 状态 |
@@ -33,6 +33,7 @@
 | 第 22 期 | Diffusion Policy: Visuomotor Policy Learning via Action Diffusion（Chi et al., RSS 2023 / IJRR 2025） | 前沿·机器人学习（扩散策略） | 中级 | 已完成 |
 | 第 23 期 | Scalable Diffusion Models with Transformers（Peebles & Xie, ICCV 2023） | 范式·生成模型（Transformer 骨干与缩放） | 中级 | 已完成 |
 | 第 24 期 | Learning to Recharge: UAV Coverage Path Planning through Deep Reinforcement Learning（Theile et al., arXiv 2023） | 前沿·CPP × 深度强化学习（能量约束与充电） | 中级 | 已完成 |
+| 第 25 期 | Large-Scale Multi-Robot Coverage Path Planning via Local Search（Tang & Ma, AAAI 2024） | 前沿·多机器人覆盖路径规划（局部搜索与强基线） | 中级 | 已完成 |
 > 后续每期生成后会自动追加本表。
 ## 每期交付物
 进入 `notes/<期数>-<论文简称>/` 目录查看：
@@ -65,6 +66,7 @@
 - [x] 前沿：机器人策略 · 扩散策略（Diffusion Policy, RSS 2023）
 - [x] 范式：生成模型 · Transformer 骨干（DiT, ICCV 2023）
 - [x] 前沿：覆盖路径规划 · 能量约束与充电（Learning to Recharge, arXiv 2023）
+- [x] 前沿：多机器人覆盖 · 局部搜索与强基线（LS-MCPP, AAAI 2024）
 ## 选题策略
 - 难度：从基础入门论文开始，随期数递增；
 - 方向：深度学习基础、移动机器人覆盖路径规划、AI 伦理与监管、社交媒体与青少年福祉；
@@ -113,7 +115,8 @@
 │   ├── 21-LDM-2022/
 │   ├── 22-DiffusionPolicy-2023/
 │   ├── 23-DiT-2023/
-│   └── 24-CPPRecharge-2023/
+│   ├── 24-CPPRecharge-2023/
+│   └── 25-LSMCPP-2024/
 └── skills/                 # 配套开源 Skill
     └── efficient-paper-reading/
         ├── SKILL.md

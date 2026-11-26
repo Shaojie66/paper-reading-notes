@@ -3,7 +3,7 @@
 > A structured archive of paper reading notes from an AI learner's perspective — one paper every two days, automatically searched, read and pushed by a scheduled Doubao task.
 > Each issue ships: a structured reading note (Markdown) + a paper structure diagram (HTML).
 ![Update](https://img.shields.io/badge/Update-every%202%20days-orange)
-![Papers](https://img.shields.io/badge/Papers-24-blue)
+![Papers](https://img.shields.io/badge/Papers-25-blue)
 ![Strategy](https://img.shields.io/badge/Strategy-survey%20first%2C%20then%20classics-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ## Contents
@@ -33,6 +33,7 @@
 | 22 | Diffusion Policy: Visuomotor Policy Learning via Action Diffusion (Chi et al., RSS 2023 / IJRR 2025) | Frontier · robot learning (diffusion policy) | Intermediate | Done |
 | 23 | Scalable Diffusion Models with Transformers (Peebles & Xie, ICCV 2023) | Paradigm · generative modeling (transformer backbone & scaling) | Intermediate | Done |
 | 24 | Learning to Recharge: UAV Coverage Path Planning through Deep Reinforcement Learning (Theile et al., arXiv 2023) | Frontier · CPP × deep RL (energy constraints & recharging) | Intermediate | Done |
+| 25 | Large-Scale Multi-Robot Coverage Path Planning via Local Search (Tang & Ma, AAAI 2024) | Frontier · multi-robot coverage path planning (local search & strong baselines) | Intermediate | Done |
 > New issues are appended automatically.
 ## Per-Issue Deliverables
 Inside `notes/<issue>-<paper-short-name>/`:
@@ -65,6 +66,7 @@ Progression: survey first, then classics, then discovery tools.
 - [x] Frontier: robot learning · diffusion policy (Diffusion Policy, RSS 2023)
 - [x] Paradigm: generative modeling · transformer backbone (DiT, ICCV 2023)
 - [x] Frontier: coverage path planning · energy constraints and recharging (Learning to Recharge, arXiv 2023)
+- [x] Frontier: multi-robot coverage · local search and strong baselines (LS-MCPP, AAAI 2024)
 ## Topic Strategy
 - Difficulty: starts from beginner-friendly papers and increases issue by issue;
 - Directions: deep learning fundamentals, coverage path planning for mobile robots, AI ethics & regulation, social media & youth wellbeing;
@@ -113,7 +115,8 @@ The **efficient-paper-reading** skill that powers this workflow is also open-sou
 │   ├── 21-LDM-2022/
 │   ├── 22-DiffusionPolicy-2023/
 │   ├── 23-DiT-2023/
-│   └── 24-CPPRecharge-2023/
+│   ├── 24-CPPRecharge-2023/
+│   └── 25-LSMCPP-2024/
 └── skills/                 # bundled open-source skill
     └── efficient-paper-reading/
         ├── SKILL.md
